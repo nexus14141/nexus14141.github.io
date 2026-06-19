@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexaAI — Discover the Best AI Tools</title>
+  <meta name="description" content="The largest community-driven directory of AI tools, chatbots, and SaaS products." />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #040509; --surface: #0c0e18; --border: rgba(255,255,255,0.07);
+      --accent: #00e5ff; --accent2: #7b61ff; --text: #e8eaf6;
+      --muted: #6b7280; --card: rgba(255,255,255,0.03);
+      --red: #ff4d4d; --green: #4ade80; --yellow: #fbbf24; --gold: #f59e0b;
+    }
+    body.light { --bg: #f0f4ff; --surface: #ffffff; --border: rgba(0,0,0,0.08); --text: #0f172a; --muted: #64748b; --card: rgba(0,0,0,0.02); }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1rem 5%; background: rgba(4,5,9,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); gap: 0.5rem; flex-wrap: wrap; transition: background 0.3s; }
+    body.light nav { background: rgba(255,255,255,0.95); }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--text); cursor: pointer; }
+    .logo span { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+    .nav-btn { padding: 0.45rem 1rem; border-radius: 100px; font-size: 0.82rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); background: none; color: var(--muted); }
+    .nav-btn:hover { color: var(--text); border-color: rgba(128,128,128,0.4); }
+    .nav-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; font-weight: 600; border: none; }
+    .nav-btn.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 600; border: none; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: #000; }
+    .user-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
+    .page { display: none; } .page.active { display: block; }
+
+    .hero { padding: 7rem 5% 2rem; text-align: center; background: radial-gradient(ellipse at 50% 0%, rgba(123,97,255,0.12) 0%, transparent 70%); }
+    .hero h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 6vw, 4rem); letter-spacing: -2px; line-height: 1.1; margin-bottom: 1rem; }
+    .hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { color: var(--muted); max-width: 480px; margin: 0 auto 2rem; }
+    .search-wrap { max-width: 600px; margin: 0 auto 1.5rem; position: relative; }
+    .search-wrap input { width: 100%; padding: 1rem 1.5rem 1rem 3rem; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; color: var(--text); font-size: 0.95rem; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s; }
+    .search-wrap input:focus { border-color: rgba(0,229,255,0.4); box-shadow: 0 0 20px rgba(0,229,255,0.1); }
+    .search-wrap input::placeholder { color: var(--muted); }
+    .search-icon { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    .stats-row { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin: 1rem 0 2rem; }
+    .stat { text-align: center; }
+    .stat-num { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.5rem; color: var(--accent); }
+    .stat-label { font-size: 0.75rem; color: var(--muted); }
+
+    .sponsored-section { padding: 0 5% 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--text); margin-bottom: 1rem; }
+    .sponsored-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .sponsored-card { border: 1px solid rgba(245,158,11,0.4); border-radius: 16px; background: rgba(245,158,11,0.04); padding: 1.5rem; position: relative; cursor: pointer; transition: transform 0.2s; }
+    .sponsored-card:hover { transform: translateY(-3px); }
+    .sponsored-badge { position: absolute; top: -10px; left: 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.7rem; border-radius: 100px; }
+    .totd-wrap { padding: 0 5% 2rem; max-width: 1100px; margin: 0 auto; }
+    .totd-card { background: linear-gradient(135deg, rgba(123,97,255,0.15), rgba(0,229,255,0.08)); border: 1px solid rgba(0,229,255,0.2); border-radius: 20px; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+    .totd-badge { font-size: 0.7rem; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .totd-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; margin-bottom: 0.2rem; }
+    .totd-desc { color: var(--muted); font-size: 0.85rem; }
+    .totd-emoji { font-size: 2.5rem; flex-shrink: 0; }
+    .totd-actions { display: flex; gap: 0.7rem; margin-top: 0.8rem; flex-wrap: wrap; }
+
+    .filters-wrap { padding: 0 5% 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    .cats-wrap { display: flex; gap: 0.6rem; flex-wrap: wrap; flex: 1; }
+    .cat-btn { padding: 0.45rem 1.1rem; border-radius: 100px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.82rem; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+    .cat-btn:hover, .cat-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.08); }
+    .pricing-filter { display: flex; gap: 0.5rem; }
+    .price-filter-btn { padding: 0.35rem 0.8rem; border-radius: 100px; border: 1px solid var(--border); background: none; color: var(--muted); font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+    .price-filter-btn.active { border-color: var(--green); color: var(--green); background: rgba(74,222,128,0.08); }
+    .sort-row { display: flex; align-items: center; justify-content: space-between; padding: 0 5% 1.2rem; flex-wrap: wrap; gap: 0.5rem; }
+    .results-count { font-size: 0.85rem; color: var(--muted); }
+    .sort-select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 0.4rem 0.8rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; }
+
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; padding: 0 5% 4rem; }
+    .tool-card { border: 1px solid var(--border); border-radius: 16px; background: var(--card); padding: 1.5rem; transition: border-color 0.3s, transform 0.3s; display: flex; flex-direction: column; gap: 0.8rem; position: relative; cursor: pointer; }
+    .tool-card:hover { border-color: rgba(0,229,255,0.25); transform: translateY(-3px); }
+    .card-top { display: flex; align-items: flex-start; gap: 0.9rem; }
+    .tool-emoji { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+    .tool-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--text); }
+    .tool-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
+    .tool-category { display: inline-block; font-size: 0.65rem; color: var(--accent); background: rgba(0,229,255,0.1); border-radius: 100px; padding: 0.12rem 0.55rem; }
+    .tool-pricing-tag { display: inline-block; font-size: 0.65rem; border-radius: 100px; padding: 0.12rem 0.55rem; }
+    .pricing-free { color: var(--green); background: rgba(74,222,128,0.1); }
+    .pricing-freemium { color: var(--yellow); background: rgba(251,191,36,0.1); }
+    .pricing-paid { color: #ff9f43; background: rgba(255,159,67,0.1); }
+    .tool-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.55; }
+    .card-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+    .upvote-btn { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.9rem; border-radius: 100px; border: 1px solid var(--border); background: none; color: var(--muted); font-size: 0.82rem; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+    .upvote-btn:hover, .upvote-btn.voted { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.08); }
+    .card-actions { display: flex; gap: 0.5rem; align-items: center; }
+    .visit-btn { padding: 0.4rem 1rem; border-radius: 100px; background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); color: var(--accent); font-size: 0.8rem; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+    .visit-btn:hover { background: rgba(0,229,255,0.2); }
+    .share-btn { padding: 0.4rem 0.6rem; border-radius: 100px; background: rgba(128,128,128,0.1); border: 1px solid var(--border); color: var(--muted); font-size: 0.75rem; cursor: pointer; }
+
+    .detail-page { padding: 6rem 5% 4rem; max-width: 800px; margin: 0 auto; }
+    .back-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.5rem 1rem; border-radius: 100px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; margin-bottom: 1.5rem; transition: all 0.2s; display: inline-block; }
+    .back-btn:hover { color: var(--text); }
+    .detail-header { display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .detail-emoji { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; flex-shrink: 0; }
+    .detail-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; letter-spacing: -1px; margin-bottom: 0.5rem; }
+    .detail-desc { color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+    .detail-meta { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .detail-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .rec-section { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .rec-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+    .ai-badge { font-size: 0.65rem; color: var(--accent2); background: rgba(123,97,255,0.1); border-radius: 100px; padding: 0.15rem 0.6rem; }
+    .rec-sub { color: var(--muted); font-size: 0.82rem; margin-bottom: 1rem; }
+    .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; }
+    .rec-card { border: 1px solid var(--border); border-radius: 12px; padding: 1rem; background: var(--card); cursor: pointer; transition: border-color 0.2s, transform 0.2s; }
+    .rec-card:hover { border-color: rgba(123,97,255,0.3); transform: translateY(-2px); }
+    .rec-card-top { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.4rem; }
+    .rec-emoji { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .rec-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; }
+    .rec-reason { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+    .rec-loading { display: flex; align-items: center; gap: 0.8rem; color: var(--muted); font-size: 0.85rem; }
+    .rec-dots span { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin: 0 2px; animation: bounce 1.2s infinite; }
+    .rec-dots span:nth-child(2){animation-delay:0.2s}.rec-dots span:nth-child(3){animation-delay:0.4s}
+    @keyframes bounce{0%,100%{opacity:0.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+    .comments-section { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .comments-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 1rem; }
+    .comment-form { display: flex; gap: 0.8rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+    .comment-input { flex: 1; min-width: 200px; padding: 0.7rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; }
+    .comment-input:focus { border-color: rgba(0,229,255,0.4); }
+    .comment-submit { padding: 0.7rem 1.3rem; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #000; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .comment-item { padding: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.7rem; }
+    .comment-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .comment-text { font-size: 0.88rem; line-height: 1.55; }
+    .no-comments { color: var(--muted); font-size: 0.85rem; }
+
+    .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 2.5rem; width: 100%; max-width: 420px; }
+    .auth-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.8rem; letter-spacing: -1px; margin-bottom: 0.3rem; }
+    .auth-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .auth-tabs { display: flex; margin-bottom: 2rem; border: 1px solid var(--border); border-radius: 100px; padding: 4px; }
+    .auth-tab { flex: 1; padding: 0.5rem; text-align: center; border-radius: 100px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; color: var(--muted); border: none; background: none; font-family: 'DM Sans', sans-serif; }
+    .auth-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; font-weight: 600; }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .form-input { width: 100%; padding: 0.75rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-color: rgba(0,229,255,0.4); }
+    .form-select { width: 100%; padding: 0.75rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; font-family: 'DM Sans', sans-serif; outline: none; }
+    .form-select option { background: var(--surface); }
+    .form-textarea { width: 100%; padding: 0.75rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.9rem; font-family: 'DM Sans', sans-serif; outline: none; resize: vertical; min-height: 80px; }
+    .btn-full { width: 100%; padding: 0.85rem; border-radius: 100px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #000; font-weight: 600; font-size: 0.95rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.2s; margin-top: 0.5rem; }
+    .btn-full:hover { opacity: 0.85; }
+    .auth-error { color: var(--red); font-size: 0.82rem; margin-top: 0.8rem; text-align: center; }
+    .auth-success { color: var(--green); font-size: 0.82rem; margin-top: 0.8rem; text-align: center; }
+
+    .submit-page { padding: 6rem 5% 4rem; max-width: 600px; margin: 0 auto; }
+    .page-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; letter-spacing: -1px; margin-bottom: 0.5rem; }
+    .page-sub { color: var(--muted); margin-bottom: 2rem; }
+    .admin-page { padding: 6rem 5% 4rem; }
+    .admin-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2rem; letter-spacing: -1px; margin-bottom: 0.5rem; }
+    .pending-card { border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; background: var(--card); }
+    .pending-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem; }
+    .pending-desc { color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem; }
+    .pending-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .approve-btn { padding: 0.45rem 1.1rem; border-radius: 100px; background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.3); color: var(--green); font-size: 0.82rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .reject-btn { padding: 0.45rem 1.1rem; border-radius: 100px; background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.2); color: var(--red); font-size: 0.82rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .sponsor-btn { padding: 0.45rem 1.1rem; border-radius: 100px; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--gold); font-size: 0.82rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+    .profile-page { padding: 6rem 5% 4rem; max-width: 800px; margin: 0 auto; }
+    .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .profile-avatar-lg { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #000; }
+    .profile-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; }
+    .profile-email { color: var(--muted); font-size: 0.9rem; }
+    .profile-tabs { display: flex; border: 1px solid var(--border); border-radius: 100px; padding: 4px; margin-bottom: 2rem; width: fit-content; }
+    .profile-tab { padding: 0.45rem 1.2rem; border-radius: 100px; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; color: var(--muted); border: none; background: none; font-family: 'DM Sans', sans-serif; }
+    .profile-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; font-weight: 600; }
+    .mini-tool-card { border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; cursor: pointer; background: var(--card); }
+    .mini-tool-card:hover { border-color: rgba(0,229,255,0.3); }
+
+    .advertise-page { padding: 6rem 5% 4rem; max-width: 800px; margin: 0 auto; }
+    .adv-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -2px; margin-bottom: 1rem; }
+    .adv-sub { color: var(--muted); font-size: 1rem; margin-bottom: 3rem; }
+    .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 3rem; }
+    .price-card { border: 1px solid var(--border); border-radius: 20px; padding: 2rem; background: var(--card); position: relative; text-align: center; }
+    .price-card.popular { border-color: var(--gold); background: rgba(245,158,11,0.04); }
+    .pop-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.9rem; border-radius: 100px; white-space: nowrap; }
+    .plan-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; }
+    .plan-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.5rem; letter-spacing: -1px; margin-bottom: 0.2rem; }
+    .plan-cycle { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .plan-features { list-style: none; text-align: left; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    .plan-features li { font-size: 0.85rem; display: flex; gap: 0.5rem; }
+    .plan-features li::before { content: '✓'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+    .contact-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; }
+
+    .newsletter-wrap { padding: 0 5% 3rem; }
+    .newsletter-box { background: linear-gradient(135deg, rgba(123,97,255,0.1), rgba(0,229,255,0.05)); border: 1px solid rgba(0,229,255,0.15); border-radius: 20px; padding: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .newsletter-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .newsletter-sub { color: var(--muted); font-size: 0.85rem; }
+    .newsletter-form { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+    .newsletter-input { padding: 0.7rem 1.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; min-width: 200px; }
+    .newsletter-btn { padding: 0.7rem 1.5rem; border-radius: 100px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #000; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+    /* ══ CHATBOT ══ */
+    .chat-fab { position: fixed; bottom: 2rem; right: 2rem; z-index: 500; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(0,229,255,0.35); transition: transform 0.3s, box-shadow 0.3s; animation: fabPulse 3s ease-in-out infinite; }
+    .chat-fab:hover { transform: scale(1.1); box-shadow: 0 12px 40px rgba(0,229,255,0.5); animation: none; }
+    .chat-fab svg { width: 26px; height: 26px; fill: #000; transition: transform 0.3s; }
+    .chat-fab.open svg { transform: rotate(45deg); }
+    @keyframes fabPulse { 0%,100%{box-shadow:0 8px 32px rgba(0,229,255,0.35)} 50%{box-shadow:0 8px 48px rgba(0,229,255,0.6)} }
+
+    .chat-window { position: fixed; bottom: 6rem; right: 2rem; z-index: 499; width: 380px; max-width: calc(100vw - 2rem); background: var(--surface); border: 1px solid rgba(0,229,255,0.2); border-radius: 24px; box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.8) translateY(20px); transform-origin: bottom right; opacity: 0; pointer-events: none; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease; max-height: 560px; }
+    .chat-window.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+
+    .chat-header { padding: 1.2rem 1.5rem; background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(123,97,255,0.08)); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.9rem; }
+    .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; box-shadow: 0 0 16px rgba(0,229,255,0.3); }
+    .chat-header-info { flex: 1; }
+    .chat-header-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+    .chat-header-status { font-size: 0.72rem; color: var(--green); display: flex; align-items: center; gap: 0.3rem; margin-top: 0.1rem; }
+    .chat-header-status::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block; animation:statusPulse 2s infinite; }
+    @keyframes statusPulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    .chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2rem; padding: 0.2rem; line-height: 1; }
+    .chat-close:hover { color: var(--text); }
+
+    .chat-messages { flex: 1; overflow-y: auto; padding: 1.2rem 1.2rem 0.5rem; display: flex; flex-direction: column; gap: 0.8rem; scroll-behavior: smooth; }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    .chat-msg { display: flex; gap: 0.7rem; align-items: flex-end; animation: msgIn 0.3s ease; }
+    .chat-msg.user { flex-direction: row-reverse; }
+    @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    .msg-avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
+    .msg-avatar.ai { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; }
+    .msg-avatar.human { background: rgba(255,255,255,0.1); color: var(--text); font-size: 0.65rem; }
+
+    .msg-bubble { max-width: 78%; padding: 0.75rem 1rem; border-radius: 18px; font-size: 0.875rem; line-height: 1.55; }
+    .chat-msg.ai .msg-bubble { background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text); }
+    .chat-msg.user .msg-bubble { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; font-weight: 500; border-bottom-right-radius: 4px; }
+
+    .typing-indicator { display: flex; gap: 0.7rem; align-items: flex-end; }
+    .typing-bubble { background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 18px; border-bottom-left-radius: 4px; padding: 0.75rem 1rem; display: flex; gap: 4px; align-items: center; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: typingBounce 1.2s ease-in-out infinite; }
+    .typing-dot:nth-child(2){animation-delay:0.2s}.typing-dot:nth-child(3){animation-delay:0.4s}
+    @keyframes typingBounce{0%,100%{transform:translateY(0);opacity:0.4}50%{transform:translateY(-5px);opacity:1}}
+
+    .chat-suggestions { padding: 0.5rem 1.2rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .suggestion-chip { padding: 0.35rem 0.85rem; border-radius: 100px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap; }
+    .suggestion-chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.06); }
+
+    .chat-input-area { padding: 0.8rem 1.2rem 1.2rem; border-top: 1px solid var(--border); }
+    .chat-input-row { display: flex; gap: 0.6rem; align-items: flex-end; }
+    .chat-input { flex: 1; padding: 0.7rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; outline: none; resize: none; max-height: 100px; transition: border-color 0.2s; line-height: 1.4; }
+    .chat-input:focus { border-color: rgba(0,229,255,0.4); }
+    .chat-input::placeholder { color: var(--muted); }
+    .chat-send { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s, transform 0.2s; }
+    .chat-send:hover { opacity: 0.85; transform: scale(1.05); }
+    .chat-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .chat-send svg { width: 18px; height: 18px; fill: #000; }
+    .chat-powered { text-align: center; font-size: 0.65rem; color: var(--muted); margin-top: 0.5rem; }
+
+    .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--surface); border: 1px solid rgba(0,229,255,0.3); color: var(--text); padding: 0.8rem 1.5rem; border-radius: 100px; font-size: 0.88rem; z-index: 600; transition: transform 0.4s; white-space: nowrap; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .loading { text-align: center; padding: 3rem; color: var(--muted); }
+    .spinner { width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty-state { text-align: center; padding: 4rem; color: var(--muted); grid-column: 1/-1; }
+    .empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state h3 { font-family: 'Syne', sans-serif; color: var(--text); margin-bottom: 0.5rem; }
+    footer { border-top: 1px solid var(--border); padding: 2rem 5%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-copy { font-size: 0.8rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    @media(max-width:600px){.tools-grid{grid-template-columns:1fr}.sponsored-grid{grid-template-columns:1fr}.rec-grid{grid-template-columns:1fr}.pricing-cards{grid-template-columns:1fr}.chat-window{right:1rem;left:1rem;width:auto}.chat-fab{bottom:1.5rem;right:1.5rem}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="showPage('home')">Nexa<span>AI</span></div>
+  <div class="nav-right" id="navRight">
+    <button class="nav-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <button class="nav-btn gold" onclick="showPage('advertise')">💰 Advertise</button>
+    <button class="nav-btn" onclick="showPage('auth')">Sign In</button>
+    <button class="nav-btn primary" onclick="showPage('submit')">+ Submit</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h1>Discover the Best<br /><span>AI Tools</span></h1>
+    <p>The largest community-driven directory of AI tools, chatbots, and SaaS products.</p>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search 200+ AI tools..." oninput="filterTools()" />
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-num" id="statTools">0</div><div class="stat-label">AI Tools</div></div>
+      <div class="stat"><div class="stat-num" id="statCats">0</div><div class="stat-label">Categories</div></div>
+      <div class="stat"><div class="stat-num">1K+</div><div class="stat-label">Community</div></div>
+    </div>
+  </div>
+  <div class="sponsored-section" id="sponsoredSection" style="display:none">
+    <div class="section-label">🏆 Sponsored</div>
+    <div class="sponsored-grid" id="sponsoredGrid"></div>
+  </div>
+  <div class="totd-wrap" id="totdWrap"></div>
+  <div class="newsletter-wrap">
+    <div class="newsletter-box">
+      <div><div class="newsletter-title">📬 Stay Updated</div><div class="newsletter-sub">Get the best new AI tools delivered weekly.</div></div>
+      <div class="newsletter-form"><input class="newsletter-input" id="newsletterEmail" placeholder="your@email.com" type="email" /><button class="newsletter-btn" onclick="subscribeNewsletter()">Subscribe</button></div>
+    </div>
+  </div>
+  <div class="section-label" style="padding:0 5% 1rem">🔥 All Tools</div>
+  <div class="filters-wrap">
+    <div class="cats-wrap" id="catsWrap"></div>
+    <div class="pricing-filter">
+      <button class="price-filter-btn active" onclick="setPricing('all',this)">All</button>
+      <button class="price-filter-btn" onclick="setPricing('Free',this)">Free</button>
+      <button class="price-filter-btn" onclick="setPricing('Freemium',this)">Freemium</button>
+      <button class="price-filter-btn" onclick="setPricing('Paid',this)">Paid</button>
+    </div>
+  </div>
+  <div class="sort-row">
+    <span class="results-count" id="resultsCount"></span>
+    <select class="sort-select" id="sortSelect" onchange="filterTools()">
+      <option value="newest">Newest First</option>
+      <option value="upvotes">Most Upvoted</option>
+      <option value="name">A–Z</option>
+    </select>
+  </div>
+  <div class="tools-grid" id="toolsGrid"><div class="loading"><div class="spinner"></div>Loading tools...</div></div>
+  <footer>
+    <div class="footer-copy">© 2026 NexaAI Directory</div>
+    <div class="footer-links">
+      <a href="#" onclick="showPage('advertise')">Advertise</a>
+      <a href="#" onclick="showPage('submit')">Submit Tool</a>
+      <a href="#" onclick="showPage('auth')">Sign In</a>
+    </div>
+  </footer>
+</div>
+
+<!-- DETAIL -->
+<div class="page" id="page-detail">
+  <div class="detail-page">
+    <button class="back-btn" onclick="showPage('home')">← Back</button>
+    <div class="detail-header">
+      <div class="detail-emoji" id="detailEmoji"></div>
+      <div><div class="detail-title" id="detailName"></div><div class="detail-meta"><span class="tool-category" id="detailCategory"></span><span class="tool-pricing-tag" id="detailPricing"></span><span id="detailSponsoredBadge"></span></div></div>
+    </div>
+    <p class="detail-desc" id="detailDesc"></p>
+    <div class="detail-actions">
+      <button class="upvote-btn" id="detailUpvoteBtn" onclick="upvoteTool()">▲ <span id="detailUpvotes">0</span> Upvotes</button>
+      <a class="visit-btn" id="detailUrl" href="#" target="_blank" rel="noopener">Visit Website →</a>
+      <button class="share-btn" onclick="shareTool()">🔗 Share</button>
+    </div>
+    <div class="rec-section">
+      <div class="rec-title">🤖 You Might Also Like <span class="ai-badge">✨ Claude AI</span></div>
+      <div class="rec-sub">AI-powered recommendations</div>
+      <div id="recContent"></div>
+    </div>
+    <div class="comments-section">
+      <div class="comments-title">💬 Comments</div>
+      <div class="comment-form" id="commentForm" style="display:none"><input class="comment-input" id="commentInput" placeholder="Share your thoughts..." /><button class="comment-submit" onclick="submitComment()">Post</button></div>
+      <div id="loginToComment" style="display:none;color:var(--muted);font-size:0.85rem;margin-bottom:1rem"><a href="#" onclick="showPage('auth')" style="color:var(--accent)">Sign in</a> to comment.</div>
+      <div id="commentsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="page" id="page-auth">
+  <div class="auth-page">
+    <div class="auth-box">
+      <div class="auth-title">Welcome</div>
+      <div class="auth-sub">Join the NexaAI community</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignin" onclick="switchAuthTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
+      </div>
+      <div id="authSignin">
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="signinEmail" type="email" placeholder="you@example.com" /></div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="signinPassword" type="password" placeholder="••••••••" /></div>
+        <button class="btn-full" onclick="signIn()">Sign In</button>
+        <div id="signinMsg"></div>
+      </div>
+      <div id="authSignup" style="display:none">
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="signupEmail" type="email" placeholder="you@example.com" /></div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="signupPassword" type="password" placeholder="Min 6 characters" /></div>
+        <button class="btn-full" onclick="signUp()">Create Account</button>
+        <div id="signupMsg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT -->
+<div class="page" id="page-submit">
+  <div class="submit-page">
+    <div class="page-title">Submit an AI Tool</div>
+    <div class="page-sub">Share a tool with the community. It'll be reviewed before publishing.</div>
+    <div class="form-group"><label class="form-label">Tool Name *</label><input class="form-input" id="submitName" placeholder="e.g. ChatGPT" /></div>
+    <div class="form-group"><label class="form-label">Website URL *</label><input class="form-input" id="submitUrl" type="url" placeholder="https://..." /></div>
+    <div class="form-group"><label class="form-label">Description *</label><textarea class="form-textarea" id="submitDesc" placeholder="What does it do?"></textarea></div>
+    <div class="form-group"><label class="form-label">Category *</label>
+      <select class="form-select" id="submitCat"><option value="">Select...</option><option>Writing</option><option>Image</option><option>Code</option><option>Video</option><option>Audio</option><option>Chatbot</option><option>Productivity</option><option>Research</option><option>Marketing</option><option>Design</option><option>Other</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Pricing</label><select class="form-select" id="submitPricing"><option>Free</option><option>Freemium</option><option>Paid</option></select></div>
+    <div class="form-group"><label class="form-label">Emoji Icon</label><input class="form-input" id="submitEmoji" placeholder="e.g. 🤖" maxlength="2" /></div>
+    <button class="btn-full" onclick="submitTool()">Submit for Review</button>
+    <div id="submitMsg" style="margin-top:1rem;text-align:center;font-size:0.85rem"></div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+  <div class="profile-page">
+    <div class="profile-header">
+      <div class="profile-avatar-lg" id="profileAvatar"></div>
+      <div><div class="profile-name" id="profileName"></div><div class="profile-email" id="profileEmail"></div></div>
+    </div>
+    <div class="profile-tabs">
+      <button class="profile-tab active" onclick="switchProfileTab('upvoted',this)">▲ Upvoted</button>
+      <button class="profile-tab" onclick="switchProfileTab('submitted',this)">📤 Submitted</button>
+    </div>
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div class="admin-page">
+    <div class="admin-title">⚙️ Admin Panel</div>
+    <p style="color:var(--muted);margin-bottom:2rem">Review and approve submitted tools.</p>
+    <div id="pendingList"></div>
+  </div>
+</div>
+
+<!-- ADVERTISE -->
+<div class="page" id="page-advertise">
+  <div class="advertise-page">
+    <button class="back-btn" onclick="showPage('home')">← Back</button>
+    <div class="adv-title">Reach 1K+<br /><span style="background:linear-gradient(90deg,#f59e0b,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">AI Enthusiasts</span></div>
+    <p class="adv-sub">Put your AI tool in front of developers, founders, and creators actively looking for the best tools.</p>
+    <div class="pricing-cards">
+      <div class="price-card"><div class="plan-name">Starter</div><div class="plan-price">$29</div><div class="plan-cycle">per month</div><ul class="plan-features"><li>Listed in directory</li><li>Category placement</li><li>1 month duration</li></ul><button class="btn-full" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="scrollToContact()">Get Started</button></div>
+      <div class="price-card popular"><div class="pop-badge">⭐ MOST POPULAR</div><div class="plan-name">Featured</div><div class="plan-price">$79</div><div class="plan-cycle">per month</div><ul class="plan-features"><li>🏆 Sponsored badge</li><li>Top of directory</li><li>Gold card border</li><li>3 month duration</li></ul><button class="btn-full" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="scrollToContact()">Get Started</button></div>
+      <div class="price-card"><div class="plan-name">Premium</div><div class="plan-price">$149</div><div class="plan-cycle">per month</div><ul class="plan-features"><li>Everything in Featured</li><li>Newsletter mention</li><li>Social media post</li><li>Tool of the Day</li></ul><button class="btn-full" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="scrollToContact()">Get Started</button></div>
+    </div>
+    <div class="contact-box" id="contactBox">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;margin-bottom:0.5rem">📩 Ready to advertise?</div>
+      <div style="color:var(--muted);font-size:0.85rem;margin-bottom:1.5rem">We'll get back to you within 24 hours.</div>
+      <div class="form-group"><label class="form-label">Your Name *</label><input class="form-input" id="advName" placeholder="John Doe" /></div>
+      <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="advEmail" type="email" placeholder="you@company.com" /></div>
+      <div class="form-group"><label class="form-label">Tool Name *</label><input class="form-input" id="advTool" placeholder="Your AI tool name" /></div>
+      <div class="form-group"><label class="form-label">Plan</label><select class="form-select" id="advPlan"><option>Starter - $29/month</option><option>Featured - $79/month</option><option>Premium - $149/month</option></select></div>
+      <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" id="advMessage" placeholder="Tell us about your tool..."></textarea></div>
+      <button class="btn-full" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="submitAdvertise()">Send Inquiry</button>
+      <div id="advMsg" style="margin-top:1rem;text-align:center;font-size:0.85rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()">
+  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 10H6v-2h12v2zm0-3H6V7h12v2z"/></svg>
+</button>
+
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-avatar">🤖</div>
+    <div class="chat-header-info">
+      <div class="chat-header-name">Nexa Assistant</div>
+      <div class="chat-header-status">Online — Powered by Claude AI</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-suggestions" id="chatSuggestions">
+    <button class="suggestion-chip" onclick="sendSuggestion(this)">Best free AI tools?</button>
+    <button class="suggestion-chip" onclick="sendSuggestion(this)">AI for video editing?</button>
+    <button class="suggestion-chip" onclick="sendSuggestion(this)">Top coding assistants?</button>
+    <button class="suggestion-chip" onclick="sendSuggestion(this)">AI image generators?</button>
+  </div>
+  <div class="chat-input-area">
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask about any AI tool..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="chat-send" id="chatSend" onclick="sendChatMessage()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <div class="chat-powered">⚡ Powered by Claude AI · NexaAI</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://mhdgxzjnrqhnqkdobzec.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZGd4empucnFobnFrZG9iemVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMjMzMjUsImV4cCI6MjA5NDY5OTMyNX0.H3GRbHAYdLyhxX6KYU62M_qn7mma2QStiZZ9Op8_5Dg';
+const OPENROUTER_KEY='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';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const ADMIN_EMAIL='alexbright788@gmail.com';
+let currentUser=null,allTools=[],userUpvotes=new Set(),activeCategory='All',activePricing='all',currentTool=null;
+const CAT_COLORS={Chatbot:"rgba(0,229,255,0.15)",Image:"rgba(255,97,166,0.15)",Code:"rgba(123,97,255,0.15)",Video:"rgba(255,165,0,0.15)",Audio:"rgba(0,255,150,0.15)",Writing:"rgba(255,220,50,0.15)",Productivity:"rgba(100,200,255,0.15)",Research:"rgba(200,100,255,0.15)",Marketing:"rgba(255,100,100,0.15)",Design:"rgba(255,150,50,0.15)",Other:"rgba(150,150,150,0.15)"};
+
+function toggleTheme(){const l=!document.body.classList.contains('light');document.body.classList.toggle('light');document.getElementById('themeBtn').textContent=l?'☀️':'🌙';localStorage.setItem('nexaai_theme',l?'light':'dark');}
+if(localStorage.getItem('nexaai_theme')==='light')document.body.classList.add('light');
+
+sb.auth.onAuthStateChange((e,s)=>{currentUser=s?.user||null;updateNav();if(currentUser)loadUserUpvotes();});
+function updateNav(){
+  const nav=document.getElementById('navRight'),l=document.body.classList.contains('light');
+  const t=`<button class="nav-btn" id="themeBtn" onclick="toggleTheme()">${l?'☀️':'🌙'}</button>`;
+  const a=`<button class="nav-btn gold" onclick="showPage('advertise')">💰 Advertise</button>`;
+  if(currentUser){const em=currentUser.email,adm=em===ADMIN_EMAIL;nav.innerHTML=`${t}${a}<div class="user-info" onclick="showProfile()"><div class="user-avatar">${em[0].toUpperCase()}</div><span>${em.split('@')[0]}</span></div>${adm?`<button class="nav-btn" onclick="showPage('admin');loadPending()">Admin</button>`:''}<button class="nav-btn" onclick="showPage('submit')">+ Submit</button><button class="nav-btn" onclick="signOut()">Sign Out</button>`;}
+  else{nav.innerHTML=`${t}${a}<button class="nav-btn" onclick="showPage('auth')">Sign In</button><button class="nav-btn primary" onclick="showPage('submit')">+ Submit</button>`;}
+}
+function showPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+p).classList.add('active');window.scrollTo(0,0);if(p==='home')loadTools();}
+function switchAuthTab(tab){document.getElementById('authSignin').style.display=tab==='signin'?'block':'none';document.getElementById('authSignup').style.display=tab==='signup'?'block':'none';document.getElementById('tabSignin').classList.toggle('active',tab==='signin');document.getElementById('tabSignup').classList.toggle('active',tab==='signup');}
+async function signIn(){const em=document.getElementById('signinEmail').value.trim(),pw=document.getElementById('signinPassword').value,msg=document.getElementById('signinMsg');const{error}=await sb.auth.signInWithPassword({email:em,password:pw});if(error){msg.className='auth-error';msg.textContent=error.message;}else{showToast('✅ Signed in!');showPage('home');}}
+async function signUp(){const em=document.getElementById('signupEmail').value.trim(),pw=document.getElementById('signupPassword').value,msg=document.getElementById('signupMsg');const{error}=await sb.auth.signUp({email:em,password:pw});if(error){msg.className='auth-error';msg.textContent=error.message;}else{msg.className='auth-success';msg.textContent='Check your email to confirm!';}}
+async function signOut(){await sb.auth.signOut();currentUser=null;userUpvotes.clear();updateNav();showPage('home');showToast('Signed out');}
+
+async function loadTools(){const{data}=await sb.from('tools').select('*').eq('status','approved').order('created_at',{ascending:false});allTools=data||[];renderSponsored();renderTOTD();renderCategories();filterTools();updateStats();}
+async function loadUserUpvotes(){if(!currentUser)return;const{data}=await sb.from('upvotes').select('tool_id').eq('user_id',currentUser.id);if(data)data.forEach(u=>userUpvotes.add(u.tool_id));}
+
+function renderSponsored(){const s=allTools.filter(t=>t.sponsored);if(!s.length){document.getElementById('sponsoredSection').style.display='none';return;}document.getElementById('sponsoredSection').style.display='block';document.getElementById('sponsoredGrid').innerHTML=s.map(t=>`<div class="sponsored-card" onclick="openTool('${t.id}')"><div class="sponsored-badge">🏆 Sponsored</div><div style="display:flex;gap:0.9rem;align-items:flex-start"><div class="tool-emoji" style="background:${CAT_COLORS[t.category]||'rgba(255,255,255,0.05)'}">${t.emoji||'🤖'}</div><div><div class="tool-name">${t.name}</div><span class="tool-category">${t.category}</span></div></div><div class="tool-desc" style="margin-top:0.8rem">${t.description}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem"><button class="upvote-btn ${userUpvotes.has(t.id)?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div>`).join('');}
+function renderTOTD(){const ns=allTools.filter(t=>!t.sponsored);if(!ns.length)return;const t=ns[new Date().getDate()%ns.length];document.getElementById('totdWrap').innerHTML=`<div class="totd-card"><div class="totd-emoji">${t.emoji||'🤖'}</div><div style="flex:1"><div class="totd-badge">⚡ Tool of the Day</div><div class="totd-name">${t.name}</div><div class="totd-desc">${t.description}</div><div class="totd-actions"><button class="upvote-btn ${userUpvotes.has(t.id)?'voted':''}" onclick="handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener">Visit →</a><button class="nav-btn" onclick="openTool('${t.id}')">Details</button></div></div></div>`;}
+function renderCategories(){const cats=['All',...new Set(allTools.map(t=>t.category))].sort((a,b)=>a==='All'?-1:b==='All'?1:a.localeCompare(b));document.getElementById('catsWrap').innerHTML=cats.map(c=>`<button class="cat-btn ${c===activeCategory?'active':''}" onclick="setCategory('${c}')">${c}</button>`).join('');}
+function setCategory(c){activeCategory=c;renderCategories();filterTools();}
+function setPricing(p,btn){activePricing=p;document.querySelectorAll('.price-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');filterTools();}
+function filterTools(){
+  const q=document.getElementById('searchInput').value.toLowerCase(),sort=document.getElementById('sortSelect').value;
+  let f=allTools.filter(t=>!t.sponsored&&(activeCategory==='All'||t.category===activeCategory)&&(activePricing==='all'||(t.pricing||'Free')===activePricing)&&(!q||t.name.toLowerCase().includes(q)||t.description.toLowerCase().includes(q)||t.category.toLowerCase().includes(q)));
+  if(sort==='upvotes')f.sort((a,b)=>(b.upvotes||0)-(a.upvotes||0));else if(sort==='name')f.sort((a,b)=>a.name.localeCompare(b.name));else f.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  document.getElementById('resultsCount').textContent=`${f.length} tool${f.length!==1?'s':''} found`;
+  const grid=document.getElementById('toolsGrid');
+  if(!f.length){grid.innerHTML=`<div class="empty-state"><div class="emoji">🔍</div><h3>No tools found</h3><p>Try a different search.</p></div>`;return;}
+  grid.innerHTML=f.map(t=>{const bg=CAT_COLORS[t.category]||'rgba(255,255,255,0.05)',voted=userUpvotes.has(t.id),pr=t.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';return `<div class="tool-card" onclick="openTool('${t.id}')"><div class="card-top"><div class="tool-emoji" style="background:${bg}">${t.emoji||'🤖'}</div><div><div class="tool-name">${t.name}</div><div class="tool-tags"><span class="tool-category">${t.category}</span><span class="tool-pricing-tag ${pc}">${pr}</span></div></div></div><div class="tool-desc">${t.description}</div><div class="card-bottom"><button class="upvote-btn ${voted?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><div class="card-actions"><button class="share-btn" onclick="event.stopPropagation();shareToolById('${t.id}')">🔗</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div></div>`;}).join('');
+}
+function updateStats(){document.getElementById('statTools').textContent=allTools.length;document.getElementById('statCats').textContent=new Set(allTools.map(t=>t.category)).size;}
+
+async function getRecommendations(tool){
+  const rc=document.getElementById('recContent');
+  rc.innerHTML=`<div class="rec-loading"><div class="rec-dots"><span></span><span></span><span></span></div><span>Finding similar tools...</span></div>`;
+  try{
+    const others=allTools.filter(t=>t.id!==tool.id).slice(0,60);
+    const list=others.map(t=>`- ${t.name} (${t.category}): ${t.description.slice(0,70)}`).join('\n');
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENROUTER_KEY}`,'X-Title':'NexaAI'},
+      body:JSON.stringify({model:'anthropic/claude-3-haiku',max_tokens:600,messages:[{role:'user',content:`Tool: "${tool.name}" (${tool.category}) - "${tool.description}"\n\nDirectory:\n${list}\n\nPick 4 similar tools. Reply ONLY with JSON array:\n[{"name":"Tool","reason":"One sentence why"}]`}]})
+    });
+    const data=await res.json();
+    if(data.error){console.error('OpenRouter error:',data.error);rc.innerHTML=`<div class="no-comments">Could not load recommendations (${data.error.message||'API error'}).</div>`;return;}
+    const text=data.choices?.[0]?.message?.content||'[]';
+    const recs=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const cards=recs.map(r=>{const m=allTools.find(t=>t.name.toLowerCase().includes(r.name.toLowerCase().split(' ')[0]));if(!m)return '';return `<div class="rec-card" onclick="openTool('${m.id}')"><div class="rec-card-top"><div class="rec-emoji" style="background:${CAT_COLORS[m.category]||'rgba(255,255,255,0.05)'}">${m.emoji||'🤖'}</div><div class="rec-name">${m.name}</div></div><div class="rec-reason">${r.reason}</div></div>`;}).filter(Boolean).join('');
+    rc.innerHTML=cards?`<div class="rec-grid">${cards}</div>`:'<div class="no-comments">No recommendations found.</div>';
+  }catch(e){console.error('Recommendation fetch failed:',e);rc.innerHTML='<div class="no-comments">Could not load recommendations.</div>';}
+}
+
+function openTool(id){
+  currentTool=allTools.find(t=>t.id===id);if(!currentTool)return;
+  const bg=CAT_COLORS[currentTool.category]||'rgba(255,255,255,0.05)',pr=currentTool.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';
+  document.getElementById('detailEmoji').style.background=bg;document.getElementById('detailEmoji').textContent=currentTool.emoji||'🤖';
+  document.getElementById('detailName').textContent=currentTool.name;document.getElementById('detailCategory').textContent=currentTool.category;
+  document.getElementById('detailPricing').textContent=pr;document.getElementById('detailPricing').className=`tool-pricing-tag ${pc}`;
+  document.getElementById('detailSponsoredBadge').innerHTML=currentTool.sponsored?'<span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-size:0.65rem;font-weight:700;padding:0.12rem 0.55rem;border-radius:100px">🏆 Sponsored</span>':'';
+  document.getElementById('detailDesc').textContent=currentTool.description;document.getElementById('detailUrl').href=currentTool.url;
+  document.getElementById('detailUpvotes').textContent=currentTool.upvotes||0;document.getElementById('detailUpvoteBtn').className=`upvote-btn ${userUpvotes.has(currentTool.id)?'voted':''}`;
+  document.getElementById('commentForm').style.display=currentUser?'flex':'none';document.getElementById('loginToComment').style.display=currentUser?'none':'block';
+  document.title=`${currentTool.name} — NexaAI`;loadComments(id);showPage('detail');getRecommendations(currentTool);
+}
+async function loadComments(tid){const l=document.getElementById('commentsList');l.innerHTML='<div class="loading"><div class="spinner"></div></div>';const{data}=await sb.from('comments').select('*').eq('tool_id',tid).order('created_at',{ascending:false});if(!data||!data.length){l.innerHTML='<div class="no-comments">No comments yet.</div>';return;}l.innerHTML=data.map(c=>`<div class="comment-item"><div class="comment-meta">${new Date(c.created_at).toLocaleDateString()}</div><div class="comment-text">${c.content}</div></div>`).join('');}
+async function submitComment(){if(!currentUser){showToast('Sign in to comment');return;}const c=document.getElementById('commentInput').value.trim();if(!c)return;await sb.from('comments').insert({tool_id:currentTool.id,user_id:currentUser.id,content:c});document.getElementById('commentInput').value='';loadComments(currentTool.id);showToast('Comment posted!');}
+async function handleUpvote(toolId){if(!currentUser){showToast('Sign in to upvote');showPage('auth');return;}const tool=allTools.find(t=>t.id===toolId);if(!tool)return;if(userUpvotes.has(toolId)){await sb.from('upvotes').delete().eq('tool_id',toolId).eq('user_id',currentUser.id);userUpvotes.delete(toolId);tool.upvotes=Math.max(0,(tool.upvotes||1)-1);showToast('Upvote removed');}else{await sb.from('upvotes').insert({tool_id:toolId,user_id:currentUser.id});userUpvotes.add(toolId);tool.upvotes=(tool.upvotes||0)+1;showToast('▲ Upvoted!');}filterTools();renderSponsored();renderTOTD();}
+async function upvoteTool(){if(!currentTool)return;await handleUpvote(currentTool.id);document.getElementById('detailUpvotes').textContent=currentTool.upvotes||0;document.getElementById('detailUpvoteBtn').className=`upvote-btn ${userUpvotes.has(currentTool.id)?'voted':''}`;}
+function shareTool(){shareToolById(currentTool?.id);}
+function shareToolById(id){const t=allTools.find(x=>x.id===id);if(!t)return;if(navigator.share)navigator.share({title:t.name,text:t.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);showToast('🔗 Link copied!');}}
+
+async function submitTool(){
+  if(!currentUser){showToast('Sign in to submit');showPage('auth');return;}
+  const name=document.getElementById('submitName').value.trim(),url=document.getElementById('submitUrl').value.trim(),desc=document.getElementById('submitDesc').value.trim(),cat=document.getElementById('submitCat').value,pricing=document.getElementById('submitPricing').value,emoji=document.getElementById('submitEmoji').value.trim()||'🤖',msg=document.getElementById('submitMsg');
+  if(!name||!url||!desc||!cat){msg.style.color='var(--red)';msg.textContent='Please fill all required fields.';return;}
+  if(!url.startsWith('http')){msg.style.color='var(--red)';msg.textContent='URL must start with https://';return;}
+  const{error}=await sb.from('tools').insert({name,url,description:desc,category:cat,emoji,pricing,status:'pending'});
+  if(error){msg.style.color='var(--red)';msg.textContent='Error submitting.';return;}
+  msg.style.color='var(--green)';msg.textContent='✅ Submitted for review!';
+  ['submitName','submitUrl','submitDesc','submitEmoji'].forEach(id=>document.getElementById(id).value='');document.getElementById('submitCat').value='';
+}
+function showProfile(){if(!currentUser){showPage('auth');return;}document.getElementById('profileAvatar').textContent=currentUser.email[0].toUpperCase();document.getElementById('profileName').textContent=currentUser.email.split('@')[0];document.getElementById('profileEmail').textContent=currentUser.email;showPage('profile');loadUpvotedTools();}
+function switchProfileTab(tab,btn){document.querySelectorAll('.profile-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');if(tab==='upvoted')loadUpvotedTools();else loadSubmittedTools();}
+function loadUpvotedTools(){const c=document.getElementById('profileContent'),up=allTools.filter(t=>userUpvotes.has(t.id));if(!up.length){c.innerHTML='<div class="no-comments">No upvoted tools yet.</div>';return;}c.innerHTML=up.map(t=>`<div class="mini-tool-card" onclick="openTool('${t.id}')"><div class="tool-emoji" style="background:${CAT_COLORS[t.category]||'rgba(255,255,255,0.05)'};width:40px;height:40px;font-size:1.2rem">${t.emoji||'🤖'}</div><div><div class="tool-name" style="font-size:0.9rem">${t.name}</div><div style="font-size:0.75rem;color:var(--muted)">${t.category} · ▲ ${t.upvotes||0}</div></div></div>`).join('');}
+async function loadSubmittedTools(){const c=document.getElementById('profileContent');c.innerHTML='<div class="loading"><div class="spinner"></div></div>';const{data}=await sb.from('tools').select('*').eq('status','pending');if(!data||!data.length){c.innerHTML='<div class="no-comments">No submitted tools.</div>';return;}c.innerHTML=data.map(t=>`<div class="mini-tool-card"><div class="tool-emoji" style="background:${CAT_COLORS[t.category]||'rgba(255,255,255,0.05)'};width:40px;height:40px;font-size:1.2rem">${t.emoji||'🤖'}</div><div><div class="tool-name" style="font-size:0.9rem">${t.name}</div><div style="font-size:0.75rem;color:var(--yellow)">⏳ Pending review</div></div></div>`).join('');}
+function subscribeNewsletter(){const em=document.getElementById('newsletterEmail').value.trim();if(!em){showToast('Enter your email first');return;}showToast('✅ Subscribed!');document.getElementById('newsletterEmail').value='';}
+function scrollToContact(){document.getElementById('contactBox').scrollIntoView({behavior:'smooth'});}
+function submitAdvertise(){const name=document.getElementById('advName').value.trim(),email=document.getElementById('advEmail').value.trim(),tool=document.getElementById('advTool').value.trim(),msg=document.getElementById('advMsg');if(!name||!email||!tool){msg.style.color='var(--red)';msg.textContent='Please fill all required fields.';return;}msg.style.color='var(--green)';msg.textContent="✅ Inquiry sent!";['advName','advEmail','advTool','advMessage'].forEach(id=>document.getElementById(id).value='');showToast('📩 Inquiry submitted!');}
+async function loadPending(){const l=document.getElementById('pendingList');l.innerHTML='<div class="loading"><div class="spinner"></div></div>';const{data}=await sb.from('tools').select('*').eq('status','pending').order('created_at',{ascending:false});if(!data||!data.length){l.innerHTML='<p style="color:var(--muted)">No pending submissions.</p>';return;}l.innerHTML=data.map(t=>`<div class="pending-card"><div class="pending-name">${t.emoji||'🤖'} ${t.name} <span style="font-size:0.75rem;color:var(--muted)">[${t.category}]</span></div><div style="font-size:0.78rem;color:var(--accent);margin-bottom:0.3rem"><a href="${t.url}" target="_blank" style="color:var(--accent)">${t.url}</a></div><div class="pending-desc">${t.description}</div><div class="pending-actions"><button class="approve-btn" onclick="approveTool('${t.id}')">✓ Approve</button><button class="sponsor-btn" onclick="sponsorTool('${t.id}')">🏆 Sponsor</button><button class="reject-btn" onclick="rejectTool('${t.id}')">✗ Reject</button></div></div>`).join('');}
+async function approveTool(id){await sb.from('tools').update({status:'approved'}).eq('id',id);showToast('✅ Approved!');loadPending();}
+async function sponsorTool(id){await sb.from('tools').update({status:'approved',sponsored:true}).eq('id',id);showToast('🏆 Sponsored!');loadPending();}
+async function rejectTool(id){await sb.from('tools').delete().eq('id',id);showToast('Rejected');loadPending();}
+
+/* ══ CHATBOT ENGINE ══ */
+let chatOpen=false,chatHistory=[],chatBusy=false;
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatWindow').classList.toggle('open',chatOpen);
+  document.getElementById('chatFab').classList.toggle('open',chatOpen);
+  if(chatOpen&&chatHistory.length===0){
+    setTimeout(()=>addBotMessage("👋 Hi! I'm **Nexa**, your AI guide to this directory.\n\nAsk me anything like:\n• *Best free AI tools for writing?*\n• *Compare ChatGPT vs Claude*\n• *Top AI tools for video editing?*"),300);
+  }
+  if(chatOpen)setTimeout(()=>document.getElementById('chatInput').focus(),400);
+}
+
+function addBotMessage(text){
+  const msgs=document.getElementById('chatMessages');
+  const d=document.createElement('div');d.className='chat-msg ai';
+  d.innerHTML=`<div class="msg-avatar ai">🤖</div><div class="msg-bubble">${fmt(text)}</div>`;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+  chatHistory.push({role:'assistant',content:text});
+}
+function addUserMessage(text){
+  const msgs=document.getElementById('chatMessages');
+  const d=document.createElement('div');d.className='chat-msg user';
+  const init=currentUser?currentUser.email[0].toUpperCase():'U';
+  d.innerHTML=`<div class="msg-bubble">${esc(text)}</div><div class="msg-avatar human">${init}</div>`;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+  chatHistory.push({role:'user',content:text});
+}
+function showTyping(){const msgs=document.getElementById('chatMessages');const d=document.createElement('div');d.className='typing-indicator';d.id='typingDot';d.innerHTML=`<div class="msg-avatar ai">🤖</div><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
+function hideTyping(){const t=document.getElementById('typingDot');if(t)t.remove();}
+function fmt(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function sendSuggestion(btn){document.getElementById('chatSuggestions').style.display='none';document.getElementById('chatInput').value=btn.textContent;sendChatMessage();}
+function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+async function sendChatMessage(){
+  if(chatBusy)return;
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();if(!text)return;
+  input.value='';input.style.height='auto';
+  document.getElementById('chatSuggestions').style.display='none';
+  addUserMessage(text);
+  chatBusy=true;document.getElementById('chatSend').disabled=true;showTyping();
+
+  try{
+    const toolContext=allTools.slice(0,80).map(t=>`${t.name} (${t.category}, ${t.pricing||'Free'}): ${t.description.slice(0,90)}`).join('\n');
+    const systemPrompt=`You are Nexa, a helpful AI assistant for NexaAI — an AI tools directory. Be friendly, concise, and helpful. When recommending tools, use the directory below. Keep responses under 180 words. Use bullet points for lists.\n\nDirectory:\n${toolContext}`;
+    const messages=[...chatHistory.slice(-8)];
+
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${OPENROUTER_KEY}`,
+        'X-Title':'NexaAI'
+      },
+      body:JSON.stringify({
+        model:'anthropic/claude-3-haiku',
+        max_tokens:400,
+        messages:[{role:'system',content:systemPrompt},...messages]
+      })
+    });
+
+    const data=await res.json();
+    hideTyping();
+    if(data.error){console.error('OpenRouter error:',data.error);addBotMessage(`Sorry, I hit an error: ${data.error.message||'Unknown API error'}. Please try again.`);}
+    else{const reply=data.choices?.[0]?.message?.content||"I couldn't get a response. Please try again.";addBotMessage(reply);}
+  }catch(e){
+    hideTyping();
+    addBotMessage("Connection error. Please check your internet and try again.");
+    console.error('Chat fetch failed:',e);
+  }
+  chatBusy=false;document.getElementById('chatSend').disabled=false;document.getElementById('chatInput').focus();
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+loadTools();
+</script>
+</body>
+</html>
