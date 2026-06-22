@@ -134,6 +134,8 @@
     .visit-btn:hover { background: var(--gold); color: #0a0a0a; }
     .share-btn { padding: 0.35rem 0.55rem; background: none; border: 1px solid var(--border); color: var(--muted); font-size: 0.74rem; cursor: pointer; }
     .share-btn:hover { color: var(--text); border-color: var(--border-strong); }
+    .save-btn { font-size: 0.95rem; line-height: 1; }
+    .save-btn.saved { color: var(--gold); border-color: var(--gold); }
 
     /* ── DETAIL ── */
     .detail-page { padding: 6.5rem 5% 4rem; max-width: 800px; margin: 0 auto; }
@@ -389,6 +391,7 @@
     <p class="detail-desc" id="detailDesc"></p>
     <div class="detail-actions">
       <button class="upvote-btn" id="detailUpvoteBtn" onclick="upvoteTool()">▲ <span id="detailUpvotes">0</span> Upvotes</button>
+      <button class="upvote-btn" id="detailSaveBtn" onclick="handleSave(currentTool.id)">☆ Save</button>
       <a class="visit-btn" id="detailUrl" href="#" target="_blank" rel="noopener">Visit Website →</a>
       <button class="share-btn" onclick="shareTool()">Share</button>
     </div>
@@ -460,7 +463,8 @@
       <div><div class="profile-name" id="profileName"></div><div class="profile-email" id="profileEmail"></div></div>
     </div>
     <div class="profile-tabs">
-      <button class="profile-tab active" onclick="switchProfileTab('upvoted',this)">Upvoted</button>
+      <button class="profile-tab active" onclick="switchProfileTab('saved',this)">Collection</button>
+      <button class="profile-tab" onclick="switchProfileTab('upvoted',this)">Upvoted</button>
       <button class="profile-tab" onclick="switchProfileTab('submitted',this)">Submitted</button>
     </div>
     <div id="profileContent"></div>
@@ -541,7 +545,7 @@ const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const OPENROUTER_KEY='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';
 const ADMIN_EMAIL='alexbright788@gmail.com';
-let currentUser=null,allTools=[],userUpvotes=new Set(),activeCategory='All',activePricing='all',currentTool=null;
+let currentUser=null,allTools=[],userUpvotes=new Set(),savedTools=new Set(),activeCategory='All',activePricing='all',currentTool=null;
 
 function iconLetter(tool){return (tool.name||'?').charAt(0).toUpperCase();}
 
@@ -550,7 +554,7 @@ function toggleTheme(){const isLight=!document.body.classList.contains('light');
 if(localStorage.getItem('nexaai_theme')==='light'){document.body.classList.add('light');}
 
 // ── AUTH ──
-sb.auth.onAuthStateChange((e,session)=>{currentUser=session?.user||null;updateNav();if(currentUser)loadUserUpvotes();});
+sb.auth.onAuthStateChange((e,session)=>{currentUser=session?.user||null;updateNav();if(currentUser){loadUserUpvotes();loadSavedTools();}});
 function updateNav(){
   const nav=document.getElementById('navRight'),isLight=document.body.classList.contains('light');
   const t=`<button class="nav-btn" id="themeBtn" onclick="toggleTheme()">${isLight?'LIGHT':'DARK'}</button>`;
@@ -567,6 +571,8 @@ async function signOut(){await sb.auth.signOut();currentUser=null;userUpvotes.cl
 // ── TOOLS ──
 async function loadTools(){const{data}=await sb.from('tools').select('*').eq('status','approved').order('created_at',{ascending:false});allTools=data||[];renderSponsored();renderTOTD();renderCategories();filterTools();updateStats();}
 async function loadUserUpvotes(){if(!currentUser)return;const{data}=await sb.from('upvotes').select('tool_id').eq('user_id',currentUser.id);if(data)data.forEach(u=>userUpvotes.add(u.tool_id));}
+async function loadSavedTools(){if(!currentUser)return;const{data}=await sb.from('saved_tools').select('tool_id').eq('user_id',currentUser.id);savedTools.clear();if(data)data.forEach(s=>savedTools.add(s.tool_id));}
+async function handleSave(toolId){if(!currentUser){showToast('Sign in to save tools');showPage('auth');return;}if(savedTools.has(toolId)){await sb.from('saved_tools').delete().eq('tool_id',toolId).eq('user_id',currentUser.id);savedTools.delete(toolId);showToast('Removed from collection');}else{await sb.from('saved_tools').insert({tool_id:toolId,user_id:currentUser.id});savedTools.add(toolId);showToast('Saved to collection');}filterTools();renderSponsored();renderTOTD();if(document.getElementById('page-detail').classList.contains('active')&&currentTool&&currentTool.id===toolId){const btn=document.getElementById('detailSaveBtn');btn.className=`upvote-btn ${savedTools.has(toolId)?'voted':''}`;btn.innerHTML=savedTools.has(toolId)?'★ Saved':'☆ Save';}}
 
 function renderSponsored(){const s=allTools.filter(t=>t.sponsored);if(!s.length){document.getElementById('sponsoredSection').style.display='none';return;}document.getElementById('sponsoredSection').style.display='block';document.getElementById('sponsoredGrid').innerHTML=s.map(t=>`<div class="sponsored-card" onclick="openTool('${t.id}')"><div class="sponsored-badge">Sponsored</div><div style="display:flex;gap:0.9rem;align-items:flex-start"><div class="tool-icon">${iconLetter(t)}</div><div><div class="tool-name">${t.name}</div><span class="tool-category">${t.category}</span></div></div><div class="tool-desc" style="margin-top:0.8rem">${t.description}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:1rem"><button class="upvote-btn ${userUpvotes.has(t.id)?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div>`).join('');}
 
@@ -585,7 +591,7 @@ function filterTools(){
   document.getElementById('resultsCount').textContent=`${f.length} tool${f.length!==1?'s':''} found`;
   const grid=document.getElementById('toolsGrid');
   if(!f.length){grid.innerHTML=`<div class="empty-state"><h3>No tools found</h3><p>Try a different search.</p></div>`;return;}
-  grid.innerHTML=f.map(t=>{const voted=userUpvotes.has(t.id),pr=t.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';return `<div class="tool-card" onclick="openTool('${t.id}')"><div class="card-top"><div class="tool-icon">${iconLetter(t)}</div><div><div class="tool-name">${t.name}</div><div class="tool-tags"><span class="tool-category">${t.category}</span><span class="tool-pricing-tag ${pc}">${pr}</span></div></div></div><div class="tool-desc">${t.description}</div><div class="card-bottom"><button class="upvote-btn ${voted?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><div class="card-actions"><button class="share-btn" onclick="event.stopPropagation();shareToolById('${t.id}')">Share</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div></div>`;}).join('');
+  grid.innerHTML=f.map(t=>{const voted=userUpvotes.has(t.id),saved=savedTools.has(t.id),pr=t.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';return `<div class="tool-card" onclick="openTool('${t.id}')"><div class="card-top"><div class="tool-icon">${iconLetter(t)}</div><div><div class="tool-name">${t.name}</div><div class="tool-tags"><span class="tool-category">${t.category}</span><span class="tool-pricing-tag ${pc}">${pr}</span></div></div></div><div class="tool-desc">${t.description}</div><div class="card-bottom"><button class="upvote-btn ${voted?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><div class="card-actions"><button class="share-btn save-btn ${saved?'saved':''}" onclick="event.stopPropagation();handleSave('${t.id}')" title="Save to collection">${saved?'★':'☆'}</button><button class="share-btn" onclick="event.stopPropagation();shareToolById('${t.id}')">Share</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div></div>`;}).join('');
 }
 function updateStats(){document.getElementById('statTools').textContent=allTools.length;document.getElementById('statCats').textContent=new Set(allTools.map(t=>t.category)).size;}
 
@@ -623,6 +629,8 @@ function openTool(id){
   document.getElementById('detailUrl').href=currentTool.url;
   document.getElementById('detailUpvotes').textContent=currentTool.upvotes||0;
   document.getElementById('detailUpvoteBtn').className=`upvote-btn ${userUpvotes.has(currentTool.id)?'voted':''}`;
+  document.getElementById('detailSaveBtn').className=`upvote-btn ${savedTools.has(currentTool.id)?'voted':''}`;
+  document.getElementById('detailSaveBtn').innerHTML=savedTools.has(currentTool.id)?'★ Saved':'☆ Save';
   document.getElementById('commentForm').style.display=currentUser?'flex':'none';
   document.getElementById('loginToComment').style.display=currentUser?'none':'block';
   document.title=`${currentTool.name} — NexaAI`;
@@ -647,8 +655,9 @@ async function submitTool(){
   ['submitName','submitUrl','submitDesc','submitEmoji'].forEach(id=>document.getElementById(id).value='');document.getElementById('submitCat').value='';
 }
 
-function showProfile(){if(!currentUser){showPage('auth');return;}document.getElementById('profileAvatar').textContent=currentUser.email[0].toUpperCase();document.getElementById('profileName').textContent=currentUser.email.split('@')[0];document.getElementById('profileEmail').textContent=currentUser.email;showPage('profile');loadUpvotedTools();}
-function switchProfileTab(tab,btn){document.querySelectorAll('.profile-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');if(tab==='upvoted')loadUpvotedTools();else loadSubmittedTools();}
+function showProfile(){if(!currentUser){showPage('auth');return;}document.getElementById('profileAvatar').textContent=currentUser.email[0].toUpperCase();document.getElementById('profileName').textContent=currentUser.email.split('@')[0];document.getElementById('profileEmail').textContent=currentUser.email;showPage('profile');loadSavedToolsTab();}
+function switchProfileTab(tab,btn){document.querySelectorAll('.profile-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');if(tab==='saved')loadSavedToolsTab();else if(tab==='upvoted')loadUpvotedTools();else loadSubmittedTools();}
+function loadSavedToolsTab(){const c=document.getElementById('profileContent'),sv=allTools.filter(t=>savedTools.has(t.id));if(!sv.length){c.innerHTML='<div class="no-comments">No saved tools yet. Tap the ☆ on any tool to add it here.</div>';return;}c.innerHTML=sv.map(t=>`<div class="mini-tool-card" onclick="openTool('${t.id}')"><div class="tool-icon" style="width:40px;height:40px;font-size:0.95rem">${iconLetter(t)}</div><div><div class="tool-name" style="font-size:0.9rem">${t.name}</div><div style="font-size:0.75rem;color:var(--muted)">${t.category} · ${t.pricing||'Free'}</div></div></div>`).join('');}
 function loadUpvotedTools(){const c=document.getElementById('profileContent'),up=allTools.filter(t=>userUpvotes.has(t.id));if(!up.length){c.innerHTML='<div class="no-comments">No upvoted tools yet.</div>';return;}c.innerHTML=up.map(t=>`<div class="mini-tool-card" onclick="openTool('${t.id}')"><div class="tool-icon" style="width:40px;height:40px;font-size:0.95rem">${iconLetter(t)}</div><div><div class="tool-name" style="font-size:0.9rem">${t.name}</div><div style="font-size:0.75rem;color:var(--muted)">${t.category} · ▲ ${t.upvotes||0}</div></div></div>`).join('');}
 async function loadSubmittedTools(){const c=document.getElementById('profileContent');c.innerHTML='<div class="loading"><div class="spinner"></div></div>';const{data}=await sb.from('tools').select('*').eq('status','pending');if(!data||!data.length){c.innerHTML='<div class="no-comments">No submitted tools.</div>';return;}c.innerHTML=data.map(t=>`<div class="mini-tool-card"><div class="tool-icon" style="width:40px;height:40px;font-size:0.95rem">${iconLetter(t)}</div><div><div class="tool-name" style="font-size:0.9rem">${t.name}</div><div style="font-size:0.75rem;color:var(--amber)">Pending review</div></div></div>`).join('');}
 
