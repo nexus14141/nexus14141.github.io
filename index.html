@@ -663,7 +663,31 @@ async function loadSubmittedTools(){const c=document.getElementById('profileCont
 
 function subscribeNewsletter(){const email=document.getElementById('newsletterEmail').value.trim();if(!email){showToast('Enter your email first');return;}showToast('Subscribed');document.getElementById('newsletterEmail').value='';}
 function scrollToContact(){document.getElementById('contactBox').scrollIntoView({behavior:'smooth'});}
-function submitAdvertise(){const name=document.getElementById('advName').value.trim(),email=document.getElementById('advEmail').value.trim(),tool=document.getElementById('advTool').value.trim(),msg=document.getElementById('advMsg');if(!name||!email||!tool){msg.style.color='var(--red)';msg.textContent='Please fill all required fields.';return;}msg.style.color='var(--green)';msg.textContent="Inquiry sent! We'll contact you within 24 hours.";['advName','advEmail','advTool','advMessage'].forEach(id=>document.getElementById(id).value='');showToast('Inquiry submitted');}
+async function submitAdvertise(){
+  const name=document.getElementById('advName').value.trim(),email=document.getElementById('advEmail').value.trim(),tool=document.getElementById('advTool').value.trim(),plan=document.getElementById('advPlan').value,message=document.getElementById('advMessage').value.trim(),msg=document.getElementById('advMsg');
+  if(!name||!email||!tool){msg.style.color='var(--red)';msg.textContent='Please fill all required fields.';return;}
+  msg.style.color='var(--muted)';msg.textContent='Sending...';
+  try{
+    await sb.from('ad_inquiries').insert({name,email,tool_name:tool,plan,message});
+    await fetch('https://api.web3forms.com/submit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        access_key:'286a7eb8-a3b2-420d-938d-32d8e508152c',
+        subject:`New NexaAI Advertise Inquiry: ${tool}`,
+        from_name:'NexaAI Advertise Form',
+        name, email,
+        message:`Tool: ${tool}\nPlan: ${plan}\nContact Email: ${email}\nContact Name: ${name}\n\nMessage:\n${message||'(none)'}`
+      })
+    });
+    msg.style.color='var(--green)';msg.textContent="Inquiry sent! We'll contact you within 24 hours.";
+    ['advName','advEmail','advTool','advMessage'].forEach(id=>document.getElementById(id).value='');
+    showToast('Inquiry submitted');
+  }catch(e){
+    console.error('Advertise submit failed:',e);
+    msg.style.color='var(--red)';msg.textContent='Something went wrong. Please try again.';
+  }
+}
 
 async function loadPending(){const l=document.getElementById('pendingList');l.innerHTML='<div class="loading"><div class="spinner"></div>Loading...</div>';const{data}=await sb.from('tools').select('*').eq('status','pending').order('created_at',{ascending:false});if(!data||!data.length){l.innerHTML='<p style="color:var(--muted)">No pending submissions.</p>';return;}l.innerHTML=data.map(t=>`<div class="pending-card"><div class="pending-name">${t.name} <span style="font-size:0.75rem;color:var(--muted)">[${t.category}] [${t.pricing||'Free'}]</span></div><div style="font-size:0.78rem;color:var(--gold);margin-bottom:0.3rem"><a href="${t.url}" target="_blank" style="color:var(--gold)">${t.url}</a></div><div class="pending-desc">${t.description}</div><div class="pending-actions"><button class="approve-btn" onclick="approveTool('${t.id}')">Approve</button><button class="sponsor-btn" onclick="sponsorTool('${t.id}')">Sponsor</button><button class="reject-btn" onclick="rejectTool('${t.id}')">Reject</button></div></div>`).join('');}
 async function approveTool(id){await sb.from('tools').update({status:'approved'}).eq('id',id);showToast('Approved');loadPending();}
