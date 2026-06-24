@@ -311,6 +311,34 @@
     .footer-links a { font-size: 0.78rem; color: var(--muted); text-decoration: none; text-transform: uppercase; letter-spacing: 0.03em; }
     .footer-links a:hover { color: var(--gold); }
     @media (max-width: 600px) { .tools-grid { grid-template-columns: 1fr; } .sponsored-grid { grid-template-columns: 1fr; } .rec-grid { grid-template-columns: 1fr; } .pricing-cards { grid-template-columns: 1fr; } .chat-window { right: 1rem; left: 1rem; width: auto; } .chat-fab { bottom: 1.5rem; right: 1.5rem; } }
+
+    /* ── COMPARE FEATURE ── */
+    .compare-checkbox-wrap { display: flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.7rem; border: 1px solid var(--border); background: none; color: var(--muted); font-size: 0.74rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .compare-checkbox-wrap:hover, .compare-checkbox-wrap.checked { border-color: var(--gold); color: var(--gold); }
+    .compare-checkbox-wrap input { display: none; }
+
+    .compare-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 480; background: var(--surface); border-top: 2px solid var(--gold); padding: 0.9rem 5%; display: none; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 -8px 24px rgba(0,0,0,0.4); }
+    .compare-bar.show { display: flex; }
+    .compare-bar-items { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; flex: 1; }
+    .compare-chip { display: flex; align-items: center; gap: 0.5rem; background: var(--surface2); border: 1px solid var(--border-strong); padding: 0.35rem 0.5rem 0.35rem 0.7rem; font-size: 0.8rem; font-weight: 600; }
+    .compare-chip button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 0 0.2rem; }
+    .compare-chip button:hover { color: var(--red); }
+    .compare-bar-actions { display: flex; gap: 0.6rem; }
+    .compare-go-btn { padding: 0.55rem 1.3rem; background: var(--gold); color: #0a0a0a; border: none; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .compare-go-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .compare-clear-btn { padding: 0.55rem 1rem; background: none; border: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .compare-clear-btn:hover { color: var(--text); border-color: var(--border-strong); }
+
+    .compare-page { padding: 6.5rem 5% 6rem; max-width: 1000px; margin: 0 auto; }
+    .compare-table-wrap { overflow-x: auto; }
+    .compare-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    .compare-table th, .compare-table td { border: 1px solid var(--border); padding: 1rem; text-align: left; vertical-align: top; }
+    .compare-table th { background: var(--surface2); font-family: 'Saira Condensed', sans-serif; font-weight: 700; text-transform: uppercase; font-size: 0.95rem; color: var(--gold); width: 140px; }
+    .compare-col-header { text-align: center !important; }
+    .compare-tool-icon-lg { width: 50px; height: 50px; background: var(--surface2); border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-family: 'Saira Condensed', sans-serif; font-weight: 800; font-size: 1.3rem; color: var(--gold); margin: 0 auto 0.6rem; }
+    .compare-tool-name { font-family: 'Saira Condensed', sans-serif; font-weight: 700; font-size: 1.05rem; text-transform: uppercase; }
+    .compare-empty { text-align: center; padding: 4rem 1rem; color: var(--muted); }
+    body.has-compare-bar { padding-bottom: 70px; }
   </style>
 </head>
 <body>
@@ -410,6 +438,16 @@
   </div>
 </div>
 
+<!-- COMPARE -->
+<div class="page" id="page-compare">
+  <div class="compare-page">
+    <button class="back-btn" onclick="showPage('home')">← Back</button>
+    <div class="page-title">Compare Tools</div>
+    <div class="page-sub">Side-by-side comparison of your selected tools.</div>
+    <div id="compareContent"></div>
+  </div>
+</div>
+
 <!-- AUTH -->
 <div class="page" id="page-auth">
   <div class="auth-page">
@@ -506,6 +544,15 @@
   </div>
 </div>
 
+<!-- COMPARE BAR -->
+<div class="compare-bar" id="compareBar">
+  <div class="compare-bar-items" id="compareBarItems"></div>
+  <div class="compare-bar-actions">
+    <button class="compare-clear-btn" onclick="clearCompare()">Clear</button>
+    <button class="compare-go-btn" id="compareGoBtn" onclick="showPage('compare');renderComparePage()" disabled>Compare</button>
+  </div>
+</div>
+
 <!-- AI CHATBOT WIDGET -->
 <button class="chat-fab" id="chatFab" onclick="toggleChat()" aria-label="Ask AI">
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 10H6v-2h12v2zm0-3H6V7h12v2z"/></svg>
@@ -546,7 +593,7 @@ const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const OPENROUTER_KEY='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';
 const ADMIN_EMAIL='alexbright788@gmail.com';
-let currentUser=null,allTools=[],userUpvotes=new Set(),savedTools=new Set(),activeCategory='All',activePricing='all',currentTool=null;
+let currentUser=null,allTools=[],userUpvotes=new Set(),savedTools=new Set(),compareList=[],activeCategory='All',activePricing='all',currentTool=null;
 
 function iconLetter(tool){return (tool.name||'?').charAt(0).toUpperCase();}
 
@@ -592,7 +639,7 @@ function filterTools(){
   document.getElementById('resultsCount').textContent=`${f.length} tool${f.length!==1?'s':''} found`;
   const grid=document.getElementById('toolsGrid');
   if(!f.length){grid.innerHTML=`<div class="empty-state"><h3>No tools found</h3><p>Try a different search.</p></div>`;return;}
-  grid.innerHTML=f.map(t=>{const voted=userUpvotes.has(t.id),saved=savedTools.has(t.id),pr=t.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';return `<div class="tool-card" onclick="openTool('${t.id}')"><div class="card-top"><div class="tool-icon">${iconLetter(t)}</div><div><div class="tool-name">${t.name}</div><div class="tool-tags"><span class="tool-category">${t.category}</span><span class="tool-pricing-tag ${pc}">${pr}</span></div></div></div><div class="tool-desc">${t.description}</div><div class="card-bottom"><button class="upvote-btn ${voted?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><div class="card-actions"><button class="share-btn save-btn ${saved?'saved':''}" onclick="event.stopPropagation();handleSave('${t.id}')" title="Save to collection">${saved?'★':'☆'}</button><button class="share-btn" onclick="event.stopPropagation();shareToolById('${t.id}')">Share</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div></div>`;}).join('');
+  grid.innerHTML=f.map(t=>{const voted=userUpvotes.has(t.id),saved=savedTools.has(t.id),inCompare=compareList.includes(t.id),pr=t.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';return `<div class="tool-card" onclick="openTool('${t.id}')"><div class="card-top"><div class="tool-icon">${iconLetter(t)}</div><div><div class="tool-name">${t.name}</div><div class="tool-tags"><span class="tool-category">${t.category}</span><span class="tool-pricing-tag ${pc}">${pr}</span></div></div></div><div class="tool-desc">${t.description}</div><div class="card-bottom"><button class="upvote-btn ${voted?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><div class="card-actions"><label class="compare-checkbox-wrap ${inCompare?'checked':''}" onclick="event.stopPropagation()"><input type="checkbox" ${inCompare?'checked':''} onchange="toggleCompare('${t.id}')" />⇄</label><button class="share-btn save-btn ${saved?'saved':''}" onclick="event.stopPropagation();handleSave('${t.id}')" title="Save to collection">${saved?'★':'☆'}</button><button class="share-btn" onclick="event.stopPropagation();shareToolById('${t.id}')">Share</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div></div>`;}).join('');
 }
 function updateStats(){document.getElementById('statTools').textContent=allTools.length;document.getElementById('statCats').textContent=new Set(allTools.map(t=>t.category)).size;}
 
@@ -775,6 +822,35 @@ async function sendChatMessage(){
   document.getElementById('chatInput').focus();
 }
 
+function toggleCompare(toolId){
+  const idx=compareList.indexOf(toolId);
+  if(idx>-1){compareList.splice(idx,1);}
+  else{if(compareList.length>=3){showToast('You can compare up to 3 tools at a time');filterTools();return;}compareList.push(toolId);}
+  filterTools();renderSponsored();
+  updateCompareBar();
+}
+function clearCompare(){compareList=[];filterTools();renderSponsored();updateCompareBar();}
+function updateCompareBar(){
+  const bar=document.getElementById('compareBar'),items=document.getElementById('compareBarItems'),goBtn=document.getElementById('compareGoBtn');
+  if(!compareList.length){bar.classList.remove('show');document.body.classList.remove('has-compare-bar');return;}
+  bar.classList.add('show');document.body.classList.add('has-compare-bar');
+  items.innerHTML=compareList.map(id=>{const t=allTools.find(x=>x.id===id);if(!t)return'';return `<div class="compare-chip">${t.name}<button onclick="toggleCompare('${id}')">✕</button></div>`;}).join('');
+  goBtn.disabled=compareList.length<2;
+}
+function renderComparePage(){
+  const c=document.getElementById('compareContent');
+  if(compareList.length<2){c.innerHTML='<div class="compare-empty">Select at least 2 tools from the directory to compare them here.</div>';return;}
+  const tools=compareList.map(id=>allTools.find(t=>t.id===id)).filter(Boolean);
+  const rows=[
+    {label:'Tool',render:t=>`<div class="compare-tool-icon-lg">${iconLetter(t)}</div><div class="compare-tool-name">${t.name}</div>`,header:true},
+    {label:'Category',render:t=>t.category},
+    {label:'Pricing',render:t=>{const pr=t.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';return `<span class="tool-pricing-tag ${pc}">${pr}</span>`;}},
+    {label:'Description',render:t=>t.description},
+    {label:'Upvotes',render:t=>`▲ ${t.upvotes||0}`},
+    {label:'Link',render:t=>`<a href="${t.url}" target="_blank" rel="noopener" style="color:var(--gold)">Visit →</a>`}
+  ];
+  c.innerHTML=`<div class="compare-table-wrap"><table class="compare-table"><tbody>${rows.map(row=>`<tr><th>${row.label}</th>${tools.map(t=>`<td class="${row.header?'compare-col-header':''}">${row.render(t)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
 loadTools();
