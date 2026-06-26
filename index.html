@@ -34,6 +34,12 @@
       --bg: #f3f6f4; --surface: #ffffff; --surface2: #e9efeb; --border: #d8e0db; --border-strong: #bdc9c1;
       --text: #131a16; --muted: #5c6862; --muted2: #8a9690;
     }
+    /* ── ACCENT COLOR THEMES ── */
+    body[data-accent="emerald"] { --gold: #10b981; --gold-bright: #34d399; --gold-dim: rgba(16,185,129,0.1); }
+    body[data-accent="gold"] { --gold: #d4a017; --gold-bright: #f0c040; --gold-dim: rgba(212,160,23,0.1); }
+    body[data-accent="blue"] { --gold: #3b82f6; --gold-bright: #60a5fa; --gold-dim: rgba(59,130,246,0.1); }
+    body[data-accent="purple"] { --gold: #a855f7; --gold-bright: #c084fc; --gold-dim: rgba(168,85,247,0.1); }
+    body[data-accent="red"] { --gold: #ef4444; --gold-bright: #f87171; --gold-dim: rgba(239,68,68,0.1); }
     html { scroll-behavior: smooth; }
     body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 400; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
     h1,h2,h3,.disp { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
@@ -58,6 +64,21 @@
     .nav-btn.gold-outline:hover { background: var(--gold-dim); }
     .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(145deg, var(--gold-bright), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #0a0a0a; }
     .user-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
+
+    /* ── COLOR PICKER ── */
+    .color-picker-wrap { position: relative; }
+    .color-swatch-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border-strong); background: var(--gold); cursor: pointer; padding: 0; transition: transform 0.2s; }
+    .color-swatch-btn:hover { transform: scale(1.08); }
+    .color-dropdown { position: absolute; top: calc(100% + 0.6rem); right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0.7rem; display: none; gap: 0.55rem; box-shadow: 0 12px 32px rgba(0,0,0,0.4); z-index: 200; }
+    .color-dropdown.open { display: flex; }
+    .color-option { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; transition: transform 0.15s, border-color 0.15s; }
+    .color-option:hover { transform: scale(1.12); }
+    .color-option.active { border-color: var(--text); }
+    .color-option[data-c="emerald"] { background: #10b981; }
+    .color-option[data-c="gold"] { background: #d4a017; }
+    .color-option[data-c="blue"] { background: #3b82f6; }
+    .color-option[data-c="purple"] { background: #a855f7; }
+    .color-option[data-c="red"] { background: #ef4444; }
 
     .page { display: none; }
     .page.active { display: block; animation: pageFadeIn 0.28s ease; }
@@ -362,6 +383,16 @@
 
 <nav>
   <div class="logo" onclick="showPage('home')"><span class="mark"></span>Nexa<span>AI</span></div>
+  <div class="color-picker-wrap">
+    <button class="color-swatch-btn" id="colorSwatchBtn" onclick="toggleColorDropdown()" title="Change accent color"></button>
+    <div class="color-dropdown" id="colorDropdown">
+      <button class="color-option" data-c="emerald" onclick="setAccentColor('emerald')"></button>
+      <button class="color-option" data-c="gold" onclick="setAccentColor('gold')"></button>
+      <button class="color-option" data-c="blue" onclick="setAccentColor('blue')"></button>
+      <button class="color-option" data-c="purple" onclick="setAccentColor('purple')"></button>
+      <button class="color-option" data-c="red" onclick="setAccentColor('red')"></button>
+    </div>
+  </div>
   <div class="nav-right" id="navRight">
     <button class="nav-btn" id="themeBtn" onclick="toggleTheme()">DARK</button>
     <button class="nav-btn gold-outline" onclick="showPage('advertise')">Advertise</button>
@@ -670,6 +701,25 @@ function iconLetter(tool){return (tool.name||'?').charAt(0).toUpperCase();}
 // ── THEME ──
 function toggleTheme(){const isLight=!document.body.classList.contains('light');document.body.classList.toggle('light');document.getElementById('themeBtn').textContent=isLight?'LIGHT':'DARK';localStorage.setItem('nexaai_theme',isLight?'light':'dark');}
 if(localStorage.getItem('nexaai_theme')==='light'){document.body.classList.add('light');}
+
+// ── ACCENT COLOR PICKER ──
+function toggleColorDropdown(){document.getElementById('colorDropdown').classList.toggle('open');}
+function setAccentColor(color){
+  document.body.setAttribute('data-accent',color);
+  localStorage.setItem('nexaai_accent',color);
+  document.querySelectorAll('.color-option').forEach(o=>o.classList.toggle('active',o.dataset.c===color));
+  const colorMap={emerald:'#10b981',gold:'#d4a017',blue:'#3b82f6',purple:'#a855f7',red:'#ef4444'};
+  document.getElementById('colorSwatchBtn').style.background=colorMap[color]||colorMap.emerald;
+  document.getElementById('colorDropdown').classList.remove('open');
+}
+document.addEventListener('click',(e)=>{
+  const wrap=document.querySelector('.color-picker-wrap');
+  if(wrap&&!wrap.contains(e.target)){document.getElementById('colorDropdown').classList.remove('open');}
+});
+(function initAccentColor(){
+  const saved=localStorage.getItem('nexaai_accent')||'emerald';
+  setAccentColor(saved);
+})();
 
 // ── AUTH ──
 sb.auth.onAuthStateChange((e,session)=>{currentUser=session?.user||null;updateNav();if(currentUser){loadUserUpvotes();loadSavedTools();}});
