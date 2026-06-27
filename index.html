@@ -62,7 +62,7 @@
     .nav-btn.primary:hover { background: var(--gold-bright); transform: translateY(-1px); }
     .nav-btn.gold-outline { border: 1px solid rgba(212,160,23,0.4); color: var(--gold); }
     .nav-btn.gold-outline:hover { background: var(--gold-dim); }
-    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(145deg, var(--gold-bright), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #0a0a0a; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(145deg, var(--gold-bright), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #0a0a0a; overflow: hidden; flex-shrink: 0; }
     .user-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
 
     /* ── COLOR PICKER ── */
@@ -235,7 +235,10 @@
     /* ── PROFILE ── */
     .profile-page { padding: 6.5rem 5% 4rem; max-width: 800px; margin: 0 auto; }
     .profile-header { display: flex; align-items: center; gap: 1.4rem; margin-bottom: 2rem; flex-wrap: wrap; }
-    .profile-avatar-lg { width: 76px; height: 76px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; font-size: 1.9rem; font-weight: 800; color: #0a0a0a; }
+    .profile-avatar-lg { width: 76px; height: 76px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; font-size: 1.9rem; font-weight: 800; color: #0a0a0a; cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0; transition: opacity 0.2s; }
+    .profile-avatar-lg:hover { opacity: 0.85; }
+    .profile-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-avatar-edit-badge { position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
     .profile-name { font-size: 1.5rem; }
     .profile-email { color: var(--muted); font-size: 0.9rem; }
     .profile-tabs { display: flex; border: 1px solid var(--border); margin-bottom: 2rem; width: fit-content; }
@@ -585,7 +588,10 @@
 <div class="page" id="page-profile">
   <div class="profile-page">
     <div class="profile-header">
-      <div class="profile-avatar-lg" id="profileAvatar"></div>
+      <div class="profile-avatar-lg" id="profileAvatar" onclick="document.getElementById('avatarFileInput').click()">
+        <span class="profile-avatar-edit-badge">✎</span>
+      </div>
+      <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)" />
       <div><div class="profile-name" id="profileName"></div><div class="profile-email" id="profileEmail"></div></div>
     </div>
     <div class="profile-tabs">
@@ -733,7 +739,12 @@ function updateNav(){
   const nav=document.getElementById('navRight'),isLight=document.body.classList.contains('light');
   const t=`<button class="nav-btn" id="themeBtn" onclick="toggleTheme()">${isLight?'LIGHT':'DARK'}</button>`;
   const a=`<button class="nav-btn gold-outline" onclick="showPage('advertise')">Advertise</button>`;
-  if(currentUser){const email=currentUser.email,isAdmin=email===ADMIN_EMAIL;nav.innerHTML=`${t}${a}<div class="user-info" onclick="showProfile()"><div class="user-avatar">${email[0].toUpperCase()}</div><span>${email.split('@')[0]}</span></div>${isAdmin?`<button class="nav-btn" onclick="showPage('admin');loadPending()">Admin</button>`:''}<button class="nav-btn" onclick="showPage('submit')">+ Submit</button><button class="nav-btn" onclick="signOut()">Sign Out</button>`;}
+  if(currentUser){
+    const email=currentUser.email,isAdmin=email===ADMIN_EMAIL;
+    const avatarUrl=currentUser.user_metadata?.avatar_url;
+    const avatarHtml=avatarUrl?`<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />`:email[0].toUpperCase();
+    nav.innerHTML=`${t}${a}<div class="user-info" onclick="showProfile()"><div class="user-avatar">${avatarHtml}</div><span>${email.split('@')[0]}</span></div>${isAdmin?`<button class="nav-btn" onclick="showPage('admin');loadPending()">Admin</button>`:''}<button class="nav-btn" onclick="showPage('submit')">+ Submit</button><button class="nav-btn" onclick="signOut()">Sign Out</button>`;
+  }
   else{nav.innerHTML=`${t}${a}<button class="nav-btn" onclick="showPage('auth')">Sign In</button><button class="nav-btn primary" onclick="showPage('submit')">+ Submit</button>`;}
 }
 function showPage(page,skipHistory){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');window.scrollTo(0,0);if(page==='home'){if(allTools.length===0){loadTools();}else{filterTools();}}if(!skipHistory){history.pushState({page},'',page==='home'?'#':'#'+page);}syncBottomNav(page);}
@@ -869,7 +880,54 @@ async function submitTool(){
   ['submitName','submitUrl','submitDesc','submitEmoji'].forEach(id=>document.getElementById(id).value='');document.getElementById('submitCat').value='';
 }
 
-function showProfile(){if(!currentUser){showPage('auth');return;}document.getElementById('profileAvatar').textContent=currentUser.email[0].toUpperCase();document.getElementById('profileName').textContent=currentUser.email.split('@')[0];document.getElementById('profileEmail').textContent=currentUser.email;showPage('profile');loadSavedToolsTab();}
+async function showProfile(){
+  if(!currentUser){showPage('auth');return;}
+  document.getElementById('profileName').textContent=currentUser.email.split('@')[0];
+  document.getElementById('profileEmail').textContent=currentUser.email;
+  showPage('profile');
+  loadSavedToolsTab();
+  await loadAvatarDisplay();
+}
+
+async function loadAvatarDisplay(){
+  const avatarEl=document.getElementById('profileAvatar');
+  const avatarUrl=currentUser.user_metadata?.avatar_url;
+  if(avatarUrl){
+    avatarEl.innerHTML=`<img src="${avatarUrl}" alt="Profile photo" /><span class="profile-avatar-edit-badge">✎</span>`;
+  }else{
+    avatarEl.innerHTML=`${currentUser.email[0].toUpperCase()}<span class="profile-avatar-edit-badge">✎</span>`;
+  }
+}
+
+async function handleAvatarUpload(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  if(!file.type.startsWith('image/')){showToast('Please choose an image file');return;}
+  if(file.size>5*1024*1024){showToast('Image must be under 5MB');return;}
+
+  showToast('Uploading photo...');
+  try{
+    const ext=file.name.split('.').pop();
+    const filePath=`${currentUser.id}/avatar.${ext}`;
+    const{error:uploadError}=await sb.storage.from('avatars').upload(filePath,file,{upsert:true});
+    if(uploadError){console.error('Avatar upload error:',uploadError);showToast('Upload failed. Please try again.');return;}
+
+    const{data:urlData}=sb.storage.from('avatars').getPublicUrl(filePath);
+    const avatarUrl=urlData.publicUrl+'?t='+Date.now();
+
+    const{error:updateError}=await sb.auth.updateUser({data:{avatar_url:avatarUrl}});
+    if(updateError){console.error('Profile update error:',updateError);showToast('Saved photo, but profile update failed.');return;}
+
+    const{data:{user}}=await sb.auth.getUser();
+    currentUser=user;
+    await loadAvatarDisplay();
+    updateNav();
+    showToast('Profile photo updated!');
+  }catch(e){
+    console.error('Avatar upload failed:',e);
+    showToast('Something went wrong. Please try again.');
+  }
+}
 function switchProfileTab(tab,btn){document.querySelectorAll('.profile-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');if(tab==='saved')loadSavedToolsTab();else if(tab==='upvoted')loadUpvotedTools();else loadSubmittedTools();}
 function loadSavedToolsTab(){const c=document.getElementById('profileContent'),sv=allTools.filter(t=>savedTools.has(t.id));if(!sv.length){c.innerHTML='<div class="no-comments">No saved tools yet. Tap the ☆ on any tool to add it here.</div>';return;}c.innerHTML=sv.map(t=>`<div class="mini-tool-card" onclick="openTool('${t.id}')"><div class="tool-icon" style="width:40px;height:40px;font-size:0.95rem">${iconLetter(t)}</div><div><div class="tool-name" style="font-size:0.9rem">${t.name}</div><div style="font-size:0.75rem;color:var(--muted)">${t.category} · ${t.pricing||'Free'}</div></div></div>`).join('');}
 function loadUpvotedTools(){const c=document.getElementById('profileContent'),up=allTools.filter(t=>userUpvotes.has(t.id));if(!up.length){c.innerHTML='<div class="no-comments">No upvoted tools yet.</div>';return;}c.innerHTML=up.map(t=>`<div class="mini-tool-card" onclick="openTool('${t.id}')"><div class="tool-icon" style="width:40px;height:40px;font-size:0.95rem">${iconLetter(t)}</div><div><div class="tool-name" style="font-size:0.9rem">${t.name}</div><div style="font-size:0.75rem;color:var(--muted)">${t.category} · ▲ ${t.upvotes||0}</div></div></div>`).join('');}
