@@ -81,9 +81,8 @@
     .color-option[data-c="red"] { background: #ef4444; }
 
     .page { display: none; }
-    .page.active { display: block; animation: pageFadeIn 0.28s ease; }
-    @keyframes pageFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .page.active { display: block; }
+    .page.active { display: block; animation: pageFadeIn 0.2s ease; }
+    @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     /* ── HERO ── */
     .hero { padding: 7rem 5% 1rem; text-align: center; position: relative; background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(212,160,23,0.1), transparent 70%); }
@@ -335,6 +334,12 @@
     .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty-state { text-align: center; padding: 4rem; color: var(--muted); grid-column: 1/-1; }
+    .pagination-wrap { display: flex; justify-content: center; align-items: center; gap: 0.4rem; padding: 0 5% 4rem; flex-wrap: wrap; }
+    .page-btn { min-width: 38px; height: 38px; padding: 0 0.6rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--muted); font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .page-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+    .page-btn.active { background: var(--gold); color: #0a0a0a; border-color: var(--gold); }
+    .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .page-dots { color: var(--muted2); padding: 0 0.3rem; }
     .empty-state h3 { font-size: 1.3rem; color: var(--text); margin-bottom: 0.5rem; }
     footer { border-top: 1px solid var(--border); padding: 2rem 5%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
     .footer-copy { font-size: 0.78rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.03em; }
@@ -479,6 +484,7 @@
     </select>
   </div>
   <div class="tools-grid" id="toolsGrid"><div class="loading"><div class="spinner"></div>Loading tools...</div></div>
+  <div class="pagination-wrap" id="paginationWrap"></div>
   <footer>
     <div class="footer-copy">© 2026 NexaAI Directory</div>
     <div class="footer-links">
@@ -730,7 +736,7 @@ function updateNav(){
   if(currentUser){const email=currentUser.email,isAdmin=email===ADMIN_EMAIL;nav.innerHTML=`${t}${a}<div class="user-info" onclick="showProfile()"><div class="user-avatar">${email[0].toUpperCase()}</div><span>${email.split('@')[0]}</span></div>${isAdmin?`<button class="nav-btn" onclick="showPage('admin');loadPending()">Admin</button>`:''}<button class="nav-btn" onclick="showPage('submit')">+ Submit</button><button class="nav-btn" onclick="signOut()">Sign Out</button>`;}
   else{nav.innerHTML=`${t}${a}<button class="nav-btn" onclick="showPage('auth')">Sign In</button><button class="nav-btn primary" onclick="showPage('submit')">+ Submit</button>`;}
 }
-function showPage(page,skipHistory){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');window.scrollTo(0,0);if(page==='home')loadTools();if(!skipHistory){history.pushState({page},'',page==='home'?'#':'#'+page);}syncBottomNav(page);}
+function showPage(page,skipHistory){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');window.scrollTo(0,0);if(page==='home'){if(allTools.length===0){loadTools();}else{filterTools();}}if(!skipHistory){history.pushState({page},'',page==='home'?'#':'#'+page);}syncBottomNav(page);}
 function syncBottomNav(page){
   document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'));
   if(page==='home')document.getElementById('bnHome').classList.add('active');
@@ -767,7 +773,9 @@ function renderCategories(){const cats=['All',...new Set(allTools.map(t=>t.categ
 function setCategory(cat){activeCategory=cat;renderCategories();filterTools();}
 function setPricing(p,btn){activePricing=p;document.querySelectorAll('.price-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');filterTools();}
 
-function filterTools(){
+let currentPage=1;const TOOLS_PER_PAGE=24;
+function filterTools(resetPage){
+  if(resetPage!==false)currentPage=1;
   const q=document.getElementById('searchInput').value.toLowerCase(),sort=document.getElementById('sortSelect').value;
   let f=allTools.filter(t=>!t.sponsored&&(activeCategory==='All'||t.category===activeCategory)&&(activePricing==='all'||(t.pricing||'Free')===activePricing)&&(!q||t.name.toLowerCase().includes(q)||t.description.toLowerCase().includes(q)||t.category.toLowerCase().includes(q)));
   if(sort==='upvotes')f.sort((a,b)=>(b.upvotes||0)-(a.upvotes||0));
@@ -775,9 +783,30 @@ function filterTools(){
   else f.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   document.getElementById('resultsCount').textContent=`${f.length} tool${f.length!==1?'s':''} found`;
   const grid=document.getElementById('toolsGrid');
-  if(!f.length){grid.innerHTML=`<div class="empty-state"><h3>No tools found</h3><p>Try a different search.</p></div>`;return;}
-  grid.innerHTML=f.map(t=>{const voted=userUpvotes.has(t.id),saved=savedTools.has(t.id),inCompare=compareList.includes(t.id),pr=t.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';return `<div class="tool-card" onclick="openTool('${t.id}')"><div class="card-top"><div class="tool-icon">${iconLetter(t)}</div><div><div class="tool-name">${t.name}</div><div class="tool-tags"><span class="tool-category">${t.category}</span><span class="tool-pricing-tag ${pc}">${pr}</span></div></div></div><div class="tool-desc">${t.description}</div><div class="card-bottom"><button class="upvote-btn ${voted?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><div class="card-actions"><label class="compare-checkbox-wrap ${inCompare?'checked':''}" onclick="event.stopPropagation()"><input type="checkbox" ${inCompare?'checked':''} onchange="toggleCompare('${t.id}')" />⇄ Compare</label><button class="share-btn save-btn ${saved?'saved':''}" onclick="event.stopPropagation();handleSave('${t.id}')" title="Save to collection">${saved?'★':'☆'}</button><button class="share-btn" onclick="event.stopPropagation();shareToolById('${t.id}')">Share</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div></div>`;}).join('');
+  if(!f.length){grid.innerHTML=`<div class="empty-state"><h3>No tools found</h3><p>Try a different search.</p></div>`;document.getElementById('paginationWrap').innerHTML='';return;}
+  const totalPages=Math.ceil(f.length/TOOLS_PER_PAGE);
+  if(currentPage>totalPages)currentPage=totalPages;
+  if(currentPage<1)currentPage=1;
+  const start=(currentPage-1)*TOOLS_PER_PAGE;
+  const pageItems=f.slice(start,start+TOOLS_PER_PAGE);
+  grid.innerHTML=pageItems.map(t=>{const voted=userUpvotes.has(t.id),saved=savedTools.has(t.id),inCompare=compareList.includes(t.id),pr=t.pricing||'Free',pc=pr==='Free'?'pricing-free':pr==='Freemium'?'pricing-freemium':'pricing-paid';return `<div class="tool-card" onclick="openTool('${t.id}')"><div class="card-top"><div class="tool-icon">${iconLetter(t)}</div><div><div class="tool-name">${t.name}</div><div class="tool-tags"><span class="tool-category">${t.category}</span><span class="tool-pricing-tag ${pc}">${pr}</span></div></div></div><div class="tool-desc">${t.description}</div><div class="card-bottom"><button class="upvote-btn ${voted?'voted':''}" onclick="event.stopPropagation();handleUpvote('${t.id}')">▲ ${t.upvotes||0}</button><div class="card-actions"><label class="compare-checkbox-wrap ${inCompare?'checked':''}" onclick="event.stopPropagation()"><input type="checkbox" ${inCompare?'checked':''} onchange="toggleCompare('${t.id}')" />⇄ Compare</label><button class="share-btn save-btn ${saved?'saved':''}" onclick="event.stopPropagation();handleSave('${t.id}')" title="Save to collection">${saved?'★':'☆'}</button><button class="share-btn" onclick="event.stopPropagation();shareToolById('${t.id}')">Share</button><a class="visit-btn" href="${t.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Visit →</a></div></div></div>`;}).join('');
+  renderPagination(totalPages);
 }
+function renderPagination(totalPages){
+  const wrap=document.getElementById('paginationWrap');
+  if(totalPages<=1){wrap.innerHTML='';return;}
+  let buttons='';
+  buttons+=`<button class="page-btn" ${currentPage===1?'disabled':''} onclick="goToPage(${currentPage-1})">‹</button>`;
+  const maxShow=5;
+  let startP=Math.max(1,currentPage-2),endP=Math.min(totalPages,startP+maxShow-1);
+  if(endP-startP<maxShow-1)startP=Math.max(1,endP-maxShow+1);
+  if(startP>1)buttons+=`<button class="page-btn" onclick="goToPage(1)">1</button>${startP>2?'<span class="page-dots">…</span>':''}`;
+  for(let i=startP;i<=endP;i++){buttons+=`<button class="page-btn ${i===currentPage?'active':''}" onclick="goToPage(${i})">${i}</button>`;}
+  if(endP<totalPages)buttons+=`${endP<totalPages-1?'<span class="page-dots">…</span>':''}<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+  buttons+=`<button class="page-btn" ${currentPage===totalPages?'disabled':''} onclick="goToPage(${currentPage+1})">›</button>`;
+  wrap.innerHTML=buttons;
+}
+function goToPage(p){currentPage=p;filterTools(false);document.getElementById('toolsGrid').scrollIntoView({behavior:'smooth',block:'start'});}
 function updateStats(){document.getElementById('statTools').textContent=allTools.length;document.getElementById('statCats').textContent=new Set(allTools.map(t=>t.category)).size;const inline=document.getElementById('statToolsInline');if(inline)inline.textContent=allTools.length;}
 
 // ── AI RECOMMENDATIONS ──
