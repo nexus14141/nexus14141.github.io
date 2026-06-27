@@ -819,7 +819,7 @@ async function getRecommendations(tool){
     const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENROUTER_KEY}`,'X-Title':'NexaAI'},
-      body:JSON.stringify({model:'anthropic/claude-3-haiku',max_tokens:600,messages:[{role:'user',content:`Tool: "${tool.name}" (${tool.category}) - "${tool.description}"\n\nDirectory:\n${list}\n\nPick 4 similar tools. Reply ONLY with JSON array:\n[{"name":"Tool","reason":"One sentence why"}]`}]})
+      body:JSON.stringify({model:'anthropic/claude-3.5-haiku',max_tokens:600,messages:[{role:'user',content:`Tool: "${tool.name}" (${tool.category}) - "${tool.description}"\n\nDirectory:\n${list}\n\nPick 4 similar tools. Reply ONLY with JSON array:\n[{"name":"Tool","reason":"One sentence why"}]`}]})
     });
     const data=await res.json();
     if(data.error){console.error('OpenRouter error:',data.error);rc.innerHTML=`<div class="no-comments">Could not load recommendations (${data.error.message||'API error'}).</div>`;return;}
@@ -967,12 +967,13 @@ async function sendChatMessage(){
   showTyping();
   try{
     const toolContext=allTools.slice(0,100).map(t=>`${t.name} (${t.category}, ${t.pricing||'Free'}): ${t.description.slice(0,100)}`).join('\n');
-    const systemPrompt=`You are Nexa, an AI assistant for NexaAI — an AI tools directory.\n\nYou have access to this directory of AI tools:\n${toolContext}\n\nGuidelines:\n- Be helpful, concise, and friendly\n- When recommending tools, mention their name, category, and why they're relevant\n- Format responses clearly with line breaks\n- Keep responses under 200 words\n- If asked to compare tools, give honest pros/cons\n- Use bullet points for lists\n- You can mention pricing (Free/Freemium/Paid)\n- If a tool isn't in the directory, say so honestly`;
+    const systemPrompt=`You are Nexa, the AI assistant for NexaAI — an AI tools directory.\n\nDirectory of available tools:\n${toolContext}\n\nHow to respond:\n- This is a live chat widget on a phone screen. Answer like a sharp, knowledgeable friend texting back — NOT like a blog post or article.\n- Default to 2-4 short sentences. Only go longer if the person explicitly asks for a full comparison or detailed breakdown.\n- Lead with the actual answer in the first sentence. No preamble like "Great question!" or restating what they asked.\n- When recommending a tool, just name it and say why in one clause — skip categories and pricing unless asked.\n- Only use bullet points if comparing 3+ things; never bullet a single answer.\n- If a tool isn't in the directory, say so in one short sentence, don't apologize at length.
+- Never repeat the directory list back to the user.`;
     const messages=[...chatHistory.slice(-6)];
     const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENROUTER_KEY}`,'X-Title':'NexaAI'},
-      body:JSON.stringify({model:'anthropic/claude-3-haiku',max_tokens:400,messages:[{role:'system',content:systemPrompt},...messages]})
+      body:JSON.stringify({model:'anthropic/claude-3.5-haiku',max_tokens:220,messages:[{role:'system',content:systemPrompt},...messages]})
     });
     const data=await res.json();
     hideTyping();
