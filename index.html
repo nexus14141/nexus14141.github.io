@@ -25,20 +25,22 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0a0e0c; --surface: #131a16; --surface2: #1a221d; --border: #263129; --border-strong: #36443a;
-      --gold: #10b981; --gold-bright: #34d399; --gold-dim: rgba(16,185,129,0.1);
-      --text: #eef2f0; --muted: #8a9690; --muted2: #5c6862;
-      --red: #e85d4a; --green: #34d399; --amber: #d4a526;
+      --bg: #0d0a14; --surface: #16121f; --surface2: #1d1729; --border: #2a2238; --border-strong: #3d3350;
+      --gold: #6d5dfc; --gold-bright: #9b8cff; --gold-dim: rgba(109,93,252,0.12);
+      --text: #f1eefc; --muted: #8d86a3; --muted2: #5e5775;
+      --red: #e85d4a; --green: #4ade80; --amber: #d4a526;
+      --glass-bg: rgba(29,23,41,0.55); --glass-border: rgba(155,140,255,0.18); --glass-highlight: rgba(255,255,255,0.08);
     }
     body.light {
-      --bg: #f3f6f4; --surface: #ffffff; --surface2: #e9efeb; --border: #d8e0db; --border-strong: #bdc9c1;
-      --text: #131a16; --muted: #5c6862; --muted2: #8a9690;
+      --bg: #f5f3fb; --surface: #ffffff; --surface2: #ece8f7; --border: #ddd6f0; --border-strong: #c3b8e3;
+      --text: #16121f; --muted: #5e5775; --muted2: #8d86a3;
+      --glass-bg: rgba(255,255,255,0.55); --glass-border: rgba(109,93,252,0.18); --glass-highlight: rgba(255,255,255,0.5);
     }
     /* ── ACCENT COLOR THEMES ── */
+    body[data-accent="lavender"] { --gold: #6d5dfc; --gold-bright: #9b8cff; --gold-dim: rgba(109,93,252,0.12); }
     body[data-accent="emerald"] { --gold: #10b981; --gold-bright: #34d399; --gold-dim: rgba(16,185,129,0.1); }
     body[data-accent="gold"] { --gold: #d4a017; --gold-bright: #f0c040; --gold-dim: rgba(212,160,23,0.1); }
     body[data-accent="blue"] { --gold: #3b82f6; --gold-bright: #60a5fa; --gold-dim: rgba(59,130,246,0.1); }
-    body[data-accent="purple"] { --gold: #a855f7; --gold-bright: #c084fc; --gold-dim: rgba(168,85,247,0.1); }
     body[data-accent="red"] { --gold: #ef4444; --gold-bright: #f87171; --gold-dim: rgba(239,68,68,0.1); }
     html { scroll-behavior: smooth; }
     body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 400; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
@@ -74,10 +76,10 @@
     .color-option { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; transition: transform 0.15s, border-color 0.15s; }
     .color-option:hover { transform: scale(1.12); }
     .color-option.active { border-color: var(--text); }
+    .color-option[data-c="lavender"] { background: #6d5dfc; }
     .color-option[data-c="emerald"] { background: #10b981; }
     .color-option[data-c="gold"] { background: #d4a017; }
     .color-option[data-c="blue"] { background: #3b82f6; }
-    .color-option[data-c="purple"] { background: #a855f7; }
     .color-option[data-c="red"] { background: #ef4444; }
 
     .page { display: none; }
@@ -134,7 +136,25 @@
 
     /* ── TOOLS GRID ── */
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; padding: 0 5% 4rem; }
-    .tool-card { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 1.4rem; transition: border-color 0.2s, transform 0.2s; display: flex; flex-direction: column; gap: 0.75rem; position: relative; cursor: pointer; }
+    .tool-card {
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      padding: 1.4rem;
+      transition: transform 0.25s cubic-bezier(0.2,0.8,0.2,1), border-color 0.25s, box-shadow 0.25s;
+      display: flex; flex-direction: column; gap: 0.75rem; position: relative; cursor: pointer;
+      box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 24px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+    .tool-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+      background: linear-gradient(180deg, var(--glass-highlight), transparent);
+      pointer-events: none; opacity: 0.6;
+    }
+    .tool-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: inset 0 1px 0 var(--glass-highlight), 0 16px 36px rgba(109,93,252,0.18); }
+    .tool-card:active { transform: translateY(-1px) scale(0.99); }
     .tool-card:hover { border-color: var(--gold); transform: translateY(-2px); }
     .card-top { display: flex; align-items: flex-start; gap: 0.85rem; }
     .tool-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border-strong); display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--gold); flex-shrink: 0; }
@@ -288,7 +308,18 @@
     .chat-fab:hover { transform: scale(1.08); background: var(--gold-bright); }
     .chat-fab svg { width: 24px; height: 24px; fill: #0a0a0a; }
 
-    .chat-window { position: fixed; bottom: 5.8rem; right: 2rem; z-index: 499; width: 380px; max-width: calc(100vw - 2rem); background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--gold); box-shadow: 0 24px 60px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.85) translateY(16px); transform-origin: bottom right; opacity: 0; pointer-events: none; transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1), opacity 0.2s ease; max-height: 560px; }
+    .chat-window {
+      position: fixed; bottom: 5.8rem; right: 2rem; z-index: 499; width: 380px; max-width: calc(100vw - 2rem);
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      box-shadow: inset 0 1px 0 var(--glass-highlight), 0 24px 60px rgba(0,0,0,0.5);
+      display: flex; flex-direction: column; overflow: hidden;
+      transform: scale(0.85) translateY(16px); transform-origin: bottom right; opacity: 0; pointer-events: none;
+      transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1), opacity 0.2s ease; max-height: 560px;
+    }
     .chat-window.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
     .chat-header { padding: 1.1rem 1.4rem; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.9rem; }
     .chat-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1rem; color: #0a0a0a; flex-shrink: 0; }
@@ -395,10 +426,10 @@
   <div class="color-picker-wrap">
     <button class="color-swatch-btn" id="colorSwatchBtn" onclick="toggleColorDropdown()" title="Change accent color"></button>
     <div class="color-dropdown" id="colorDropdown">
+      <button class="color-option" data-c="lavender" onclick="setAccentColor('lavender')"></button>
       <button class="color-option" data-c="emerald" onclick="setAccentColor('emerald')"></button>
       <button class="color-option" data-c="gold" onclick="setAccentColor('gold')"></button>
       <button class="color-option" data-c="blue" onclick="setAccentColor('blue')"></button>
-      <button class="color-option" data-c="purple" onclick="setAccentColor('purple')"></button>
       <button class="color-option" data-c="red" onclick="setAccentColor('red')"></button>
     </div>
   </div>
@@ -721,7 +752,7 @@ function setAccentColor(color){
   document.body.setAttribute('data-accent',color);
   localStorage.setItem('nexaai_accent',color);
   document.querySelectorAll('.color-option').forEach(o=>o.classList.toggle('active',o.dataset.c===color));
-  const colorMap={emerald:'#10b981',gold:'#d4a017',blue:'#3b82f6',purple:'#a855f7',red:'#ef4444'};
+  const colorMap={lavender:'#6d5dfc',emerald:'#10b981',gold:'#d4a017',blue:'#3b82f6',red:'#ef4444'};
   document.getElementById('colorSwatchBtn').style.background=colorMap[color]||colorMap.emerald;
   document.getElementById('colorDropdown').classList.remove('open');
 }
@@ -730,7 +761,7 @@ document.addEventListener('click',(e)=>{
   if(wrap&&!wrap.contains(e.target)){document.getElementById('colorDropdown').classList.remove('open');}
 });
 (function initAccentColor(){
-  const saved=localStorage.getItem('nexaai_accent')||'emerald';
+  const saved=localStorage.getItem('nexaai_accent')||'lavender';
   setAccentColor(saved);
 })();
 
