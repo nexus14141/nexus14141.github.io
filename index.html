@@ -44,6 +44,9 @@
     body[data-accent="red"] { --gold: #ef4444; --gold-bright: #f87171; --gold-dim: rgba(239,68,68,0.1); }
     html { scroll-behavior: smooth; }
     body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 400; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+    button, .tool-card, .category-card, .mini-tool-card, .rec-card, .sponsored-card, .price-card, .pending-card { -webkit-tap-highlight-color: transparent; }
+    button:active, .nav-btn:active, .cat-btn:active, .upvote-btn:active, .share-btn:active, .visit-btn:active, .bottom-nav-item:active, .price-filter-btn:active, .compare-checkbox-wrap:active, .page-btn:active, .color-option:active, .color-swatch-btn:active, .suggestion-chip:active, .chat-send:active, .chat-fab:active, .btn-full:active { transform: scale(0.94); transition: transform 0.1s ease; }
+    .tool-card:active, .category-card:active, .mini-tool-card:active, .rec-card:active, .sponsored-card:active, .price-card:active, .pending-card:active { transform: scale(0.98); transition: transform 0.12s ease; }
     h1,h2,h3,.disp { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
     .eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
     a { color: inherit; }
@@ -83,8 +86,8 @@
     .color-option[data-c="red"] { background: #ef4444; }
 
     .page { display: none; }
-    .page.active { display: block; animation: pageFadeIn 0.2s ease; }
-    @keyframes pageFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .page.active { display: block; animation: pageEnter 0.32s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes pageEnter { from { opacity: 0; transform: translateY(14px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
     /* ── HERO ── */
     .hero { padding: 7rem 5% 1rem; text-align: center; position: relative; background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(212,160,23,0.1), transparent 70%); }
@@ -165,7 +168,6 @@
     }
     .tool-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: inset 0 1px 0 var(--glass-highlight), 0 16px 36px rgba(109,93,252,0.22); }
     .tool-card:hover::before { animation-duration: 2.2s; }
-    .tool-card:active { transform: translateY(-1px) scale(0.99); }
     @media (prefers-reduced-motion: reduce) { .tool-card::before { animation: none; } }
     .tool-card:hover { border-color: var(--gold); transform: translateY(-2px); }
     .card-top { display: flex; align-items: flex-start; gap: 0.85rem; }
@@ -273,6 +275,11 @@
     .profile-avatar-edit-badge { position: absolute; bottom: -4px; right: -4px; width: 26px; height: 26px; border-radius: 50%; background: var(--surface2); border: 3px solid var(--bg); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; z-index: 2; }
     .profile-name { font-size: 1.5rem; }
     .profile-email { color: var(--muted); font-size: 0.9rem; }
+    .profile-joined { color: var(--muted2); font-size: 0.76rem; margin-top: 0.3rem; }
+    .profile-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-bottom: 1.8rem; }
+    .profile-stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0.9rem 0.5rem; text-align: center; }
+    .profile-stat-num { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--gold); line-height: 1; }
+    .profile-stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.3rem; }
     .profile-tabs { display: flex; border: 1px solid var(--border); margin-bottom: 2rem; width: fit-content; }
     .profile-tab { padding: 0.5rem 1.3rem; font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; cursor: pointer; transition: all 0.2s; color: var(--muted); border: none; background: none; font-family: 'Inter', sans-serif; }
     .profile-tab.active { background: var(--gold); color: #0a0a0a; }
@@ -654,7 +661,16 @@
         <span class="profile-avatar-edit-badge">✎</span>
       </div>
       <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)" />
-      <div><div class="profile-name" id="profileName"></div><div class="profile-email" id="profileEmail"></div></div>
+      <div>
+        <div class="profile-name" id="profileName"></div>
+        <div class="profile-email" id="profileEmail"></div>
+        <div class="profile-joined" id="profileJoined"></div>
+      </div>
+    </div>
+    <div class="profile-stats-row" id="profileStatsRow">
+      <div class="profile-stat-card"><div class="profile-stat-num" id="statSaved">0</div><div class="profile-stat-label">Saved</div></div>
+      <div class="profile-stat-card"><div class="profile-stat-num" id="statUpvoted">0</div><div class="profile-stat-label">Upvoted</div></div>
+      <div class="profile-stat-card"><div class="profile-stat-num" id="statSubmitted">0</div><div class="profile-stat-label">Submitted</div></div>
     </div>
     <div class="profile-tabs">
       <button class="profile-tab active" onclick="switchProfileTab('saved',this)">Collection</button>
@@ -946,9 +962,18 @@ async function showProfile(){
   if(!currentUser){showPage('auth');return;}
   document.getElementById('profileName').textContent=currentUser.email.split('@')[0];
   document.getElementById('profileEmail').textContent=currentUser.email;
+  const joinedDate=currentUser.created_at?new Date(currentUser.created_at).toLocaleDateString('en-US',{month:'long',year:'numeric'}):'';
+  document.getElementById('profileJoined').textContent=joinedDate?`Member since ${joinedDate}`:'';
   showPage('profile');
   loadSavedToolsTab();
   await loadAvatarDisplay();
+  updateProfileStats();
+}
+
+function updateProfileStats(){
+  document.getElementById('statSaved').textContent=savedTools.size;
+  document.getElementById('statUpvoted').textContent=userUpvotes.size;
+  document.getElementById('statSubmitted').textContent='—';
 }
 
 async function loadAvatarDisplay(){
