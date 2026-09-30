@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Dictionary — Plain-Language AI Terms | NexAI</title>
+<meta name="description" content="NexAI's AI dictionary explains artificial intelligence terms in plain language. Look up LLMs, neural networks, RAG, fine-tuning, embeddings, agents, tokens, and more."/>
+<meta name="keywords" content="AI dictionary, artificial intelligence glossary, AI terms, LLM definition, neural network, machine learning glossary, AI explained"/>
+<link rel="canonical" href="https://nexus14141.github.io/ai-dictionary/"/>
+<meta property="og:title" content="AI Dictionary — Plain-Language AI Terms | NexAI"/>
+<meta property="og:description" content="Plain-language definitions of AI terms: LLMs, neural networks, RAG, fine-tuning, embeddings, agents, and more."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://nexus14141.github.io/ai-dictionary/"/>
+<meta property="og:image" content="https://nexus14141.github.io/icon-192.png"/>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"DefinedTermSet",
+  "name":"NexAI AI Dictionary",
+  "description":"Plain-language definitions of artificial intelligence terms.",
+  "url":"https://nexus14141.github.io/ai-dictionary/",
+  "publisher":{"@type":"Organization","name":"NexAI","url":"https://nexus14141.github.io/"}
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#0a0e0c;--surface:#131a16;--surface2:#1a221d;--border:#263129;--gold:#10b981;--gold-bright:#34d399;--gold-dim:rgba(16,185,129,0.1);--text:#eef2f0;--muted:#8a9690;--muted2:#5c6862;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.6;padding-bottom:3rem;}
+a{color:inherit;text-decoration:none;}
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0.9rem 5%;background:rgba(10,14,12,0.92);border-bottom:1px solid var(--border);}
+.logo{font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:8px;}
+.logo .mark{width:24px;height:24px;border-radius:7px;background:linear-gradient(145deg,var(--gold-bright),var(--gold));}
+.logo span{color:var(--gold);}
+.nav-back{font-size:0.82rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.nav-back:hover{color:var(--gold);}
+.hero{padding:4rem 5% 2.5rem;text-align:center;background:radial-gradient(ellipse 60% 50% at 50% 0%,var(--gold-dim),transparent 70%);}
+.hero h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:800;letter-spacing:-0.02em;margin-bottom:0.8rem;}
+.hero p{color:var(--muted);max-width:520px;margin:0 auto 1.5rem;font-size:1rem;}
+.search-bar{display:flex;max-width:480px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:100px;overflow:hidden;transition:border-color 0.2s;}
+.search-bar:focus-within{border-color:var(--gold);}
+.search-bar input{flex:1;background:none;border:none;padding:0.9rem 1.2rem;color:var(--text);font-size:0.92rem;font-family:'Inter',sans-serif;outline:none;}
+.search-bar input::placeholder{color:var(--muted2);}
+.alpha-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:1.5rem 5%;max-width:900px;margin:0 auto;}
+.alpha-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+.alpha-btn:hover,.alpha-btn.active{background:var(--gold);color:#0a0a0a;border-color:var(--gold);}
+.container{max-width:900px;margin:0 auto;padding:0 5%;}
+.letter-section{margin-bottom:3rem;}
+.letter-heading{font-size:1.6rem;font-weight:800;color:var(--gold);margin-bottom:1.2rem;padding-bottom:0.5rem;border-bottom:2px solid var(--gold-dim);}
+.term-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.5rem;margin-bottom:0.8rem;transition:border-color 0.2s;}
+.term-card:hover{border-color:var(--gold);}
+.term-name{font-weight:700;font-size:1rem;color:var(--text);margin-bottom:0.4rem;display:flex;align-items:center;gap:8px;}
+.term-abbr{font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:100px;background:var(--gold-dim);color:var(--gold);}
+.term-def{font-size:0.88rem;color:var(--muted);line-height:1.6;}
+.term-example{font-size:0.82rem;color:var(--muted2);margin-top:0.5rem;padding-left:0.8rem;border-left:2px solid var(--border);font-style:italic;}
+.no-results{text-align:center;padding:4rem 1rem;color:var(--muted);}
+footer{text-align:center;padding:2rem;color:var(--muted2);font-size:0.8rem;border-top:1px solid var(--border);margin-top:2rem;}
+footer a{color:var(--gold);}
+@media(max-width:600px){.term-card{padding:1rem 1.1rem;}.hero{padding:3rem 5% 2rem;}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo"><span class="mark"></span>Nex<span>AI</span></div>
+  <a class="nav-back" href="../">← Back to tools</a>
+</nav>
+
+<div class="hero">
+  <h1>AI Dictionary</h1>
+  <p>Plain-language definitions of artificial intelligence terms — no jargon, no fluff.</p>
+  <div class="search-bar"><input type="text" id="dictSearch" placeholder="Search a term..." oninput="filterTerms()"/></div>
+</div>
+
+<div class="alpha-nav" id="alphaNav"></div>
+
+<div class="container" id="dictContainer"></div>
+
+<footer>Part of <a href="../">NexAI</a> — AI Tools, AI Dictionary &amp; AI Resources · © 2026 NexAI</footer>
+
+<script>
+const terms = [
+  {letter:'A', name:'Agent (AI)', abbr:'', def:'An AI system that can perceive its environment, make decisions, and take actions autonomously to achieve a goal — often without needing step-by-step human instruction.', example:'Example: An AI agent that independently browses the web, writes a summary, and emails it to you.'},
+  {letter:'A', name:'Attention Mechanism', abbr:'', def:'A technique in neural networks that lets the model focus on the most relevant parts of an input when making a prediction, rather than treating all parts equally.', example:'Example: When translating a sentence, attention helps the model focus on the right source words for each translated word.'},
+  {letter:'A', name:'Autoregressive Model', abbr:'', def:'A model that generates outputs one piece at a time, with each new piece conditioned on everything generated before it. Most language models work this way.', example:'Example: GPT generates one token at a time, each based on the full previous context.'},
+  {letter:'B', name:'Benchmark', abbr:'', def:'A standardized test or dataset used to measure and compare AI model performance. Results on common benchmarks help researchers track progress.', example:'Example: MMLU is a benchmark testing models across 57 academic subjects.'},
+  {letter:'C', name:'Context Window', abbr:'', def:'The maximum amount of text (measured in tokens) an AI model can process at once — both the prompt and its response must fit within this limit.', example:'Example: A model with a 128K context window can handle roughly 100,000 words in one go.'},
+  {letter:'E', name:'Embedding', abbr:'', def:'A way of representing words, sentences, or other data as lists of numbers (vectors) so AI models can understand meaning and similarity mathematically.', example:'Example: The words "king" and "queen" have embeddings that are mathematically close to each other.'},
+  {letter:'F', name:'Fine-tuning', abbr:'', def:'The process of taking a pre-trained AI model and training it further on a smaller, specific dataset to make it better at a particular task.', example:'Example: Fine-tuning GPT on medical texts to make it more accurate for clinical questions.'},
+  {letter:'F', name:'Foundation Model', abbr:'', def:'A large AI model trained on vast amounts of data that can be adapted to many different downstream tasks. Most modern AI products are built on top of foundation models.', example:'Example: GPT-4, Claude, and Gemini are all foundation models.'},
+  {letter:'G', name:'Generative AI', abbr:'', def:'AI systems that can create new content — text, images, audio, video, or code — rather than just analyzing or classifying existing data.', example:'Example: ChatGPT generates text; Midjourney generates images.'},
+  {letter:'G', name:'GPU', abbr:'Graphics Processing Unit', def:'A type of computer chip originally designed for graphics but now essential for training and running AI models because of its ability to perform many calculations in parallel.', example:''},
+  {letter:'H', name:'Hallucination', abbr:'', def:'When an AI model confidently generates information that is factually incorrect or made up. A major known limitation of current language models.', example:'Example: A model inventing a plausible-sounding but non-existent research paper citation.'},
+  {letter:'H', name:'RLHF', abbr:'Reinforcement Learning from Human Feedback', def:'A training technique where humans rate model outputs, and those ratings are used to train the model to produce responses people prefer. Used to align AI with human values.', example:'Example: InstructGPT and Claude both used RLHF-based alignment techniques.'},
+  {letter:'I', name:'Inference', abbr:'', def:'The process of running a trained AI model to generate a response or output — as opposed to training, which is teaching the model. Most AI use in production is inference.', example:'Example: Every time you send a message to an AI chatbot, inference is happening.'},
+  {letter:'I', name:'In-Context Learning', abbr:'ICL', def:'A model\'s ability to learn from examples provided directly in the prompt at inference time, without updating its actual weights.', example:'Example: Showing a model 3 example translations in the prompt so it understands the format.'},
+  {letter:'L', name:'Large Language Model', abbr:'LLM', def:'A type of AI model trained on vast amounts of text data that can understand and generate human language. The foundation of most modern AI chatbots.', example:'Example: GPT-4, Claude, Gemini, and Llama are all large language models.'},
+  {letter:'L', name:'Latent Space', abbr:'', def:'The compressed, mathematical space inside an AI model where concepts are represented as points. Similar concepts cluster nearby in latent space.', example:''},
+  {letter:'M', name:'Multimodal AI', abbr:'', def:'An AI model that can process and generate multiple types of data — such as text, images, audio, or video — rather than just one.', example:'Example: GPT-4o can accept both text and images as input and respond in text.'},
+  {letter:'N', name:'Neural Network', abbr:'', def:'A computing system loosely inspired by the human brain, made of layers of connected nodes (neurons) that learn patterns from data by adjusting connection strengths.', example:'Example: Image recognition models use neural networks to learn what cats look like from millions of examples.'},
+  {letter:'P', name:'Prompt', abbr:'', def:'The input or instruction you give to an AI model. The quality and structure of a prompt significantly affects the quality of the model\'s output.', example:'Example: "Summarize this article in three bullet points for a non-technical audience."'},
+  {letter:'P', name:'Prompt Engineering', abbr:'', def:'The practice of carefully crafting prompts to get the best possible output from an AI model — including techniques like few-shot examples, chain-of-thought, and role assignment.', example:''},
+  {letter:'Q', name:'Quantization', abbr:'', def:'A technique for making AI models smaller and faster by reducing the numerical precision of their parameters, with minimal loss in output quality.', example:'Example: Running a 70B model on a laptop by quantizing it from 32-bit to 4-bit precision.'},
+  {letter:'R', name:'RAG', abbr:'Retrieval-Augmented Generation', def:'A technique that enhances a language model by letting it search an external database or document store for relevant information before generating a response — reducing hallucinations.', example:'Example: A customer service bot that retrieves your company\'s policy docs before answering a user\'s question.'},
+  {letter:'R', name:'Reasoning Model', abbr:'', def:'A type of AI model that explicitly "thinks through" a problem step-by-step before giving a final answer, often producing more accurate results on complex tasks.', example:'Example: OpenAI\'s o1 and Anthropic\'s extended-thinking Claude are reasoning models.'},
+  {letter:'S', name:'System Prompt', abbr:'', def:'A hidden instruction given to an AI model before the conversation starts that sets its behavior, persona, or constraints. Users usually can\'t see it.', example:'Example: "You are a helpful customer service agent for Acme Corp. Never discuss competitor products."'},
+  {letter:'T', name:'Token', abbr:'', def:'The basic unit AI language models use to process text. A token is roughly 3-4 characters or about 0.75 words. Pricing and context limits are measured in tokens.', example:'Example: The sentence "Hello world!" is about 4 tokens.'},
+  {letter:'T', name:'Temperature', abbr:'', def:'A setting that controls how random or creative an AI model\'s outputs are. Low temperature = more predictable. High temperature = more varied and creative.', example:'Example: Temperature 0 gives the same answer every time; temperature 1 gives more variety.'},
+  {letter:'T', name:'Transfer Learning', abbr:'', def:'A technique where a model trained on one task is reused as the starting point for a different but related task, saving compute and data compared to training from scratch.', example:''},
+  {letter:'T', name:'Transformer', abbr:'', def:'The neural network architecture behind most modern AI models, introduced by Google in 2017. It uses attention mechanisms to process sequences of data efficiently.', example:'Example: GPT stands for Generative Pre-trained Transformer.'},
+  {letter:'V', name:'Vector Database', abbr:'', def:'A database designed to store and search through embeddings (numerical representations of data), enabling fast similarity search — essential for RAG systems.', example:'Example: Pinecone and Chroma are popular vector databases used in AI applications.'},
+  {letter:'Z', name:'Zero-Shot Learning', abbr:'', def:'When an AI model correctly handles a task it was never explicitly trained on, purely based on its general understanding from pre-training — with no examples provided.', example:'Example: Asking a model to classify sentiment in Swahili without any Swahili examples.'},
+];
+
+function filterTerms(letter = null) {
+  const query = document.getElementById('dictSearch').value.toLowerCase().trim();
+  const container = document.getElementById('dictContainer');
+  const grouped = {};
+
+  terms.forEach(t => {
+    const matchesSearch = !query || t.name.toLowerCase().includes(query) || t.def.toLowerCase().includes(query) || (t.abbr && t.abbr.toLowerCase().includes(query));
+    const matchesLetter = !letter || t.letter === letter;
+    if (matchesSearch && matchesLetter) {
+      if (!grouped[t.letter]) grouped[t.letter] = [];
+      grouped[t.letter].push(t);
+    }
+  });
+
+  if (Object.keys(grouped).length === 0) {
+    container.innerHTML = '<div class="no-results"><p>No terms found. Try a different search.</p></div>';
+    return;
+  }
+
+  container.innerHTML = Object.keys(grouped).sort().map(l => `
+    <div class="letter-section" id="letter-${l}">
+      <div class="letter-heading">${l}</div>
+      ${grouped[l].map(t => `
+        <div class="term-card">
+          <div class="term-name">${t.name}${t.abbr ? `<span class="term-abbr">${t.abbr}</span>` : ''}</div>
+          <div class="term-def">${t.def}</div>
+          ${t.example ? `<div class="term-example">${t.example}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function buildAlphaNav() {
+  const letters = [...new Set(terms.map(t => t.letter))].sort();
+  document.getElementById('alphaNav').innerHTML = letters.map(l =>
+    `<button class="alpha-btn" onclick="scrollToLetter('${l}')">${l}</button>`
+  ).join('');
+}
+
+function scrollToLetter(l) {
+  filterTerms();
+  setTimeout(() => {
+    const el = document.getElementById('letter-' + l);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 50);
+}
+
+buildAlphaNav();
+filterTerms();
+</script>
+</body>
+</html>
