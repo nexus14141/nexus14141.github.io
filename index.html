@@ -3,24 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NexaAI — AI Tools Directory</title>
+  <title>NexAI — AI Tools, AI Dictionary & AI Resources</title>
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <meta name="theme-color" content="#0a0a0a" />
-  <meta name="description" content="The largest community-driven directory of AI tools, chatbots, and SaaS products." />
-  <meta property="og:title" content="NexaAI — Discover the Best AI Tools" />
-  <meta property="og:description" content="Browse 300+ AI tools across writing, image, video, code, audio and more. Community-driven, always updated." />
+  <meta name="description" content="NexAI is your hub to explore artificial intelligence — a curated AI tools directory, a plain-language AI dictionary, and AI resources & guides for beginners and builders alike." />
+  <meta name="keywords" content="AI, artificial intelligence, AI tools, AI dictionary, AI resources, AI guides, AI directory" />
+  <meta property="og:site_name" content="NexAI" />
+  <meta property="og:title" content="NexAI — AI Tools, AI Dictionary & AI Resources" />
+  <meta property="og:description" content="Explore the world of artificial intelligence: 300+ AI tools, a plain-language AI dictionary, and curated AI resources & guides — all in one place." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://nexus14141.github.io/" />
   <meta property="og:image" content="https://nexus14141.github.io/icon-192.png" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="NexaAI — Discover the Best AI Tools" />
-  <meta name="twitter:description" content="Browse 300+ AI tools across writing, image, video, code, audio and more." />
+  <meta name="twitter:title" content="NexAI — AI Tools, AI Dictionary & AI Resources" />
+  <meta name="twitter:description" content="Explore the world of artificial intelligence: AI tools, an AI dictionary, and curated AI resources & guides." />
   <meta name="twitter:image" content="https://nexus14141.github.io/icon-192.png" />
   <link rel="canonical" href="https://nexus14141.github.io/" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "NexAI",
+    "alternateName": "NexAI — AI Tools, AI Dictionary & AI Resources",
+    "url": "https://nexus14141.github.io/",
+    "description": "NexAI is a community-driven hub for AI tools, an AI dictionary, and curated AI resources & guides.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://nexus14141.github.io/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "NexAI",
+    "url": "https://nexus14141.github.io/",
+    "logo": "https://nexus14141.github.io/icon-192.png",
+    "description": "Community-driven directory of AI tools, an AI dictionary, and AI resources & guides."
+  }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -481,7 +508,7 @@
 </div>
 
 <nav>
-  <div class="logo" onclick="showPage('home')"><span class="mark"></span>Nexa<span>AI</span></div>
+  <div class="logo" onclick="showPage('home')"><span class="mark"></span>Nex<span>AI</span></div>
   <div class="color-picker-wrap">
     <button class="color-swatch-btn" id="colorSwatchBtn" onclick="toggleColorDropdown()" title="Customize appearance"></button>
     <div class="color-dropdown" id="colorDropdown">
@@ -501,6 +528,7 @@
       </div>
     </div>
   </div>
+  <a class="nav-btn" href="ai-dictionary/">Dictionary</a>
   <div class="nav-right" id="navRight">
     <button class="nav-btn" id="themeBtn" onclick="toggleTheme()">DARK</button>
     <button class="nav-btn gold-outline" onclick="showPage('advertise')">Advertise</button>
@@ -515,8 +543,8 @@
     <div class="hero-content">
       <div class="hero-tagline">The Best Destination For</div>
       <h1>AI Tools</h1>
-      <div class="hero-subtitle">Discover. Compare. Grow.</div>
-      <p>The largest community-driven directory of AI tools, chatbots, and SaaS products. Explore <span id="statToolsInline">200</span>+ tools curated by the community.</p>
+      <div class="hero-subtitle">Explore the World of Artificial Intelligence</div>
+      <p>Your community-driven hub for AI tools, an AI dictionary, and curated AI resources &amp; guides. Explore <span id="statToolsInline">200</span>+ tools curated by the community.</p>
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search AI tools..." oninput="filterTools()" />
         <button onclick="document.getElementById('searchInput').focus()">Search</button>
@@ -589,7 +617,7 @@
   <div class="tools-grid" id="toolsGrid"><div class="loading"><div class="spinner"></div>Loading tools...</div></div>
   <div class="pagination-wrap" id="paginationWrap"></div>
   <footer>
-    <div class="footer-copy">© 2026 NexaAI Directory</div>
+    <div class="footer-copy">© 2026 NexAI</div>
     <div class="footer-links">
       <a href="blog.html">Blog</a>
       <a href="#" onclick="showPage('advertise')">Advertise</a>
@@ -643,7 +671,7 @@
   <div class="auth-page">
     <div class="auth-box">
       <div class="auth-title">Welcome</div>
-      <div class="auth-sub">Join the NexaAI community</div>
+      <div class="auth-sub">Join the NexAI community</div>
       <div class="auth-tabs">
         <button class="auth-tab active" id="tabSignin" onclick="switchAuthTab('signin')">Sign In</button>
         <button class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
@@ -833,7 +861,7 @@
   <div class="chat-header">
     <div class="chat-avatar">N</div>
     <div class="chat-header-info">
-      <div class="chat-header-name">Nexa Assistant</div>
+      <div class="chat-header-name">Nex Assistant</div>
       <div class="chat-header-status">Online</div>
     </div>
     <button class="chat-close" onclick="toggleChat()">✕</button>
@@ -852,7 +880,7 @@
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
     </div>
-    <div class="chat-powered">NexaAI Assistant</div>
+    <div class="chat-powered">NexAI Assistant</div>
   </div>
 </div>
 
@@ -993,7 +1021,7 @@ async function getRecommendations(tool){
     const list=others.map(t=>`- ${t.name} (${t.category}): ${t.description.slice(0,70)}`).join('\n');
     const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENROUTER_KEY}`,'X-Title':'NexaAI'},
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENROUTER_KEY}`,'X-Title':'NexAI'},
       body:JSON.stringify({model:'anthropic/claude-3.5-haiku',max_tokens:600,messages:[{role:'user',content:`Tool: "${tool.name}" (${tool.category}) - "${tool.description}"\n\nDirectory:\n${list}\n\nPick 4 similar tools. Reply ONLY with JSON array:\n[{"name":"Tool","reason":"One sentence why"}]`}]})
     });
     const data=await res.json();
@@ -1022,7 +1050,7 @@ function openTool(id){
   document.getElementById('detailSaveBtn').innerHTML=savedTools.has(currentTool.id)?'★ Saved':'☆ Save';
   document.getElementById('commentForm').style.display=currentUser?'flex':'none';
   document.getElementById('loginToComment').style.display=currentUser?'none':'block';
-  document.title=`${currentTool.name} — NexaAI`;
+  document.title=`${currentTool.name} — NexAI`;
   loadComments(id);showPage('detail');getRecommendations(currentTool);
 }
 
@@ -1153,8 +1181,8 @@ async function submitAdvertise(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         access_key:'286a7eb8-a3b2-420d-938d-32d8e508152c',
-        subject:`New NexaAI Advertise Inquiry: ${tool}`,
-        from_name:'NexaAI Advertise Form',
+        subject:`New NexAI Advertise Inquiry: ${tool}`,
+        from_name:'NexAI Advertise Form',
         name, email,
         message:`Tool: ${tool}\nPlan: ${plan}\nContact Email: ${email}\nContact Name: ${name}\n\nMessage:\n${message||'(none)'}`
       })
@@ -1181,7 +1209,7 @@ function toggleChat(){
   const win=document.getElementById('chatWindow');
   win.classList.toggle('open',chatOpen);
   if(chatOpen&&chatHistory.length===0){
-    setTimeout(()=>addBotMessage("Hi, I'm Nexa — your AI assistant.\n\nI know all the tools in this directory. Ask me anything like:\n• \"Best free AI tools for writing?\"\n• \"Compare ChatGPT vs Claude\"\n• \"What AI tool should I use for videos?\""),300);
+    setTimeout(()=>addBotMessage("Hi, I'm Nex — your AI assistant.\n\nI know all the tools in this directory. Ask me anything like:\n• \"Best free AI tools for writing?\"\n• \"Compare ChatGPT vs Claude\"\n• \"What AI tool should I use for videos?\""),300);
   }
   if(chatOpen)setTimeout(()=>document.getElementById('chatInput').focus(),400);
 }
@@ -1232,12 +1260,12 @@ async function sendChatMessage(){
   showTyping();
   try{
     const toolContext=allTools.slice(0,100).map(t=>`${t.name} (${t.category}, ${t.pricing||'Free'}): ${t.description.slice(0,100)}`).join('\n');
-    const systemPrompt=`You are Nexa, the AI assistant for NexaAI — an AI tools directory.\n\nDirectory of available tools:\n${toolContext}\n\nHow to respond:\n- This is a live chat widget on a phone screen. Answer like a sharp, knowledgeable friend texting back — NOT like a blog post or article.\n- Default to 2-4 short sentences. Only go longer if the person explicitly asks for a full comparison or detailed breakdown.\n- Lead with the actual answer in the first sentence. No preamble like "Great question!" or restating what they asked.\n- When recommending a tool, just name it and say why in one clause — skip categories and pricing unless asked.\n- Only use bullet points if comparing 3+ things; never bullet a single answer.\n- If a tool isn't in the directory, say so in one short sentence, don't apologize at length.
+    const systemPrompt=`You are Nex, the AI assistant for NexAI — an AI tools directory.\n\nDirectory of available tools:\n${toolContext}\n\nHow to respond:\n- This is a live chat widget on a phone screen. Answer like a sharp, knowledgeable friend texting back — NOT like a blog post or article.\n- Default to 2-4 short sentences. Only go longer if the person explicitly asks for a full comparison or detailed breakdown.\n- Lead with the actual answer in the first sentence. No preamble like "Great question!" or restating what they asked.\n- When recommending a tool, just name it and say why in one clause — skip categories and pricing unless asked.\n- Only use bullet points if comparing 3+ things; never bullet a single answer.\n- If a tool isn't in the directory, say so in one short sentence, don't apologize at length.
 - Never repeat the directory list back to the user.`;
     const messages=[...chatHistory.slice(-6)];
     const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENROUTER_KEY}`,'X-Title':'NexaAI'},
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${OPENROUTER_KEY}`,'X-Title':'NexAI'},
       body:JSON.stringify({model:'anthropic/claude-sonnet-4.6',max_tokens:220,messages:[{role:'system',content:systemPrompt},...messages]})
     });
     const data=await res.json();
